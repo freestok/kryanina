@@ -36,3 +36,8 @@ html, body {
         grid-template-areas: "sidebar   map" "sidebar  map";
     }
 }
+
+#map {
+    height: 100%;
+    width: 100%;
+}
