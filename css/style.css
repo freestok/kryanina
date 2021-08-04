@@ -31,7 +31,7 @@ html, body {
 
 @media only screen and (min-width: 544px) {
     .wrapper {
-        grid-template-columns: 20% 80%;
+        grid-template-columns: minmax(300px, 25%) auto;
         grid-template-rows: auto;
         grid-template-areas: "sidebar  map";
     }
