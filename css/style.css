@@ -17,7 +17,7 @@ html, body {
 
 .wrapper {
     display: grid;
-    grid-template-rows: 25% 25% auto;
+    grid-template-rows: 25% auto;
     grid-template-areas: "sidebar" "map";
     width: 100vw;
     height: 100vh;
