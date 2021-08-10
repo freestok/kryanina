@@ -17,7 +17,7 @@ html, body {
 
 .wrapper {
     display: grid;
-    grid-template-rows: 25% 25% auto;
+    grid-template-rows: 25% auto;
     grid-template-areas: "sidebar" "map";
     width: 100vw;
     height: 100vh;
@@ -31,9 +31,9 @@ html, body {
 
 @media only screen and (min-width: 544px) {
     .wrapper {
-        grid-template-columns: 20% 80%;
-        grid-template-rows: 60px auto;
-        grid-template-areas: "sidebar   map" "sidebar  map";
+        grid-template-columns: minmax(300px, 25%) auto;
+        grid-template-rows: auto;
+        grid-template-areas: "sidebar  map";
     }
 }
 
