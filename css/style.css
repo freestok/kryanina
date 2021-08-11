@@ -8,7 +8,7 @@ html, body {
 
 .sidebar {
     grid-area: sidebar;
-    background-color: #333;
+    background-color: #F9EFE6;
 }
 
 .map {
@@ -24,7 +24,7 @@ html, body {
 }
 
 .box {
-    color: #fff;
+    color: #121212;
     padding: 10px;
     font-size: 20px;
 }
