@@ -1,6 +1,22 @@
 # kryanina
 GEOG 575 Final Projeeeeeeeeeect
 
+# On the indicators
+You can find indicators and their subsequent year with the following:
+    `INDICATOR ABBREVIATON` + `YEAR`
+
+The translation of the democracy indicators:
+| Dem. Index        | Abbreviation  |
+| -----------       | -----------   |
+| Electoral         | el            |
+| Liberal           | li            |
+| Participatory     | pa            |
+| Deliberative      | de            |
+| Egalitarian       | eg            |
+
+So, the liberal democracy index for 2020 would be:  
+      `li2020`
+
 # Useful Git Stuff
 
 Download the VSCode extension "GitHub Pull Requests and Issues". This will 
