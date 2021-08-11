@@ -1,7 +1,14 @@
 // -----------------------------------
 // --------- GLOBAL VARIABLES --------
 let year = 2020,
-    indicator = 'li';
+    indicator = 'li',
+    colorScales = {
+        reds: chroma.scale('reds').colors(8),
+        oranges: chroma.scale('oranges').colors(8),
+        blues: chroma.scale('blues').colors(8),
+        greens: chroma.scale('greens').colors(8),
+        purples: chroma.scale('purples').colors(8)
+    };
 // -----------------------------------
 // -----------------------------------
 
@@ -26,7 +33,7 @@ async function fetchJSON(url) {
 
 function style(feature) {
     return {
-        fillColor: getColor(feature.properties[`${indicator}${year}`]),
+        fillColor: getColor(feature.properties[`${indicator}${year}`], colorScales.purples),
         weight: 2,
         opacity: 1,
         color: 'white',
@@ -34,13 +41,13 @@ function style(feature) {
     };
 }
 
-function getColor(d) {
-    return d > .9 ? '#800026' :
-           d > .8  ? '#BD0026' :
-           d > .7  ? '#E31A1C' :
-           d > .6  ? '#FC4E2A' :
-           d > .5   ? '#FD8D3C' :
-           d > .4   ? '#FEB24C' :
-           d > .3   ? '#FED976' :
-                      '#FFEDA0';
+function getColor(d, colorScale) {
+    return d > .9 ? colorScale[7] :
+           d > .8 ? colorScale[6] :
+           d > .7 ? colorScale[5] :
+           d > .6 ? colorScale[4] :
+           d > .5 ? colorScale[3] :
+           d > .4 ? colorScale[2] :
+           d > .3 ? colorScale[1] :
+                    colorScale[0];
 }
