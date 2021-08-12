@@ -1,7 +1,7 @@
 // -----------------------------------
 // --------- GLOBAL VARIABLES --------
 let year = 2020,
-    indicator = 'li',
+    indicator,
     mapData,
     colorScales = {
         reds: chroma.scale('reds').colors(8),
@@ -14,6 +14,7 @@ let year = 2020,
 // -----------------------------------
 
 $(document).ready(() => {
+    indicator = $('input[name=flexRadioDefault]:checked')[0].id.replace('Radio','');
     initListeners();
     initMap();
 });
