@@ -2,6 +2,7 @@
 // --------- GLOBAL VARIABLES --------
 let year = 2020,
     indicator = 'li',
+    mapData,
     colorScales = {
         reds: chroma.scale('reds').colors(8),
         oranges: chroma.scale('oranges').colors(8),
@@ -13,6 +14,20 @@ let year = 2020,
 // -----------------------------------
 
 $(document).ready(() => {
+    initListeners();
+    initMap();
+});
+
+
+function initListeners() {
+    // listener on radio buttons
+    $("input:radio[name=flexRadioDefault]").on("change", (e) => {
+        indicator = e.target.id.replace('Radio','');
+        mapData.eachLayer(layer => layer.setStyle(style(layer.feature)));
+    });
+}
+
+function initMap() {
     // set-up map and basemap
     const map = L.map('map').setView([39.47, 0], 2);
     L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
@@ -22,9 +37,11 @@ $(document).ready(() => {
 
     // --------------------- add data to the map ---------------
     fetchJSON('./data/vdem_15s.json').then((data) => {
-        L.geoJSON(data, {style: style}).addTo(map);
+        mapData = L.geoJSON(data, {style: style}).addTo(map);;
+        console.log('mapData added to map');
     });
-});
+}
+
 
 async function fetchJSON(url) {
     const response = await fetch(url);
@@ -34,9 +51,9 @@ async function fetchJSON(url) {
 function style(feature) {
     return {
         fillColor: getColor(feature.properties[`${indicator}${year}`], colorScales.purples),
-        weight: 2,
+        weight: .75,
         opacity: 1,
-        color: 'white',
+        color: '#191919',
         fillOpacity: 0.7
     };
 }
