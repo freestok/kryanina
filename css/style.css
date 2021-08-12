@@ -3,12 +3,12 @@ html, body {
     margin: 0;
     height: 100%;
     width: 100%;
-    font-family: "Avenir Next W00";
+    font-family: "Staatliches", sans-serif;
 }
 
 .sidebar {
     grid-area: sidebar;
-    background-color: #333;
+    background-color: #F9EFE6;
 }
 
 .map {
@@ -24,7 +24,7 @@ html, body {
 }
 
 .box {
-    color: #fff;
+    color: #121212;
     padding: 10px;
     font-size: 20px;
 }
