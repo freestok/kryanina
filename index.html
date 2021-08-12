@@ -24,14 +24,51 @@
 
 <body>
     <div class="wrapper">
-        <div class="box sidebar">Sidebar</div>
+        <div class="box sidebar">
+            <div class="container">
+                <div class="row" id="demOverlayRow">
+                    <h2>Democracy Index</h2>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="flexRadioDefault" id="elRadio">
+                        <label class="form-check-label" for="elRadio">
+                            Electoral
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="flexRadioDefault" id="liRadio" checked>
+                        <label class="form-check-label" for="liRadio">
+                            Liberal
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="flexRadioDefault" id="paRadio">
+                        <label class="form-check-label" for="paRadio">
+                            Participatory
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="flexRadioDefault" id="deRadio">
+                        <label class="form-check-label" for="deRadio">
+                            Deliberative
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="flexRadioDefault" id="egRadio">
+                        <label class="form-check-label" for="egRadio">
+                            Egalitatrian
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="map">
             <div id="map"></div>
         </div>
     </div>
 
-      <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA==" crossorigin=""></script>
-      <script src="./js/main.js" type="module"></script>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA==" crossorigin=""></script>
+    <script src="./js/main.js" type="module"></script>
 </body>
 
 </html>
