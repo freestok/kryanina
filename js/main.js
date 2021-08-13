@@ -17,7 +17,51 @@ $(document).ready(() => {
     indicator = $('input[name=flexRadioDefault]:checked')[0].id.replace('Radio','');
     initListeners();
     initMap();
+
+    // Test for tray expansion
+    $(window).resize(() => {
+        console.log("resize!")
+        if (($(".tray").hasClass("expanded"))) {
+            if(($(window).width() >= 544)) {
+                $(".wrapper").css("grid-template-rows", "auto minmax(200px, 33%)")
+            } else {
+                $(".wrapper").css("grid-template-rows", "25% auto 25%")
+            }
+        } else {
+            if(($(window).width() >= 544)) {
+                $(".wrapper").css("grid-template-rows", "auto 0px")
+            } else {
+                $(".wrapper").css("grid-template-rows", "25% auto 0px")
+            }
+        }
+    })
+    
+
+    $("#toggleBtn").on("click", e => {
+        if ($(".tray").hasClass("expanded")) {
+            $(".tray").removeClass("expanded box")
+
+            if(($(window).width() >= 544)) {
+                $(".wrapper").css("grid-template-rows", "auto 0px")
+            } else {
+                $(".wrapper").css("grid-template-rows", "25% auto 0px")
+            }
+        } else {
+            $(".tray").addClass("expanded box")
+            if(($(window).width() >= 544)) {
+                $(".wrapper").css("grid-template-rows", "auto minmax(200px, 33%)")
+            } else {
+                $(".wrapper").css("grid-template-rows", "25% auto 25%")
+            }
+            
+        }
+    });
+
 });
+
+function updateGridTemplateRows() {
+    
+}
 
 
 function initListeners() {
