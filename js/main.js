@@ -26,6 +26,13 @@ function initListeners() {
         indicator = e.target.id.replace('Radio','');
         mapData.eachLayer(layer => layer.setStyle(style(layer.feature)));
     });
+
+    $('#timeSlider').on('input', (e) => {
+        let yearVal = $(e.target).val();
+        year = yearVal;
+        $('#timeLabel').text(String(yearVal));
+        mapData.eachLayer(layer => layer.setStyle(style(layer.feature)));
+    });
 }
 
 function initMap() {
