@@ -9,16 +9,23 @@ html, body {
 .sidebar {
     grid-area: sidebar;
     background-color: #F9EFE6;
+    overflow-y: auto;
 }
 
 .map {
     grid-area: map;
 }
 
+.tray {
+    background-color: goldenrod;
+    grid-area: tray;
+    overflow-y: auto;
+}
+
 .wrapper {
     display: grid;
-    grid-template-rows: 25% auto;
-    grid-template-areas: "sidebar" "map";
+    grid-template-rows: 25% auto 0px;
+    grid-template-areas: "sidebar" "map" "tray";
     width: 100vw;
     height: 100vh;
 }
@@ -32,8 +39,9 @@ html, body {
 @media only screen and (min-width: 544px) {
     .wrapper {
         grid-template-columns: minmax(300px, 25%) auto;
-        grid-template-rows: auto;
-        grid-template-areas: "sidebar  map";
+        grid-template-rows: auto 0px;
+        grid-template-areas: "sidebar  map"
+                             "sidebar  tray";
     }
 }
 
