@@ -17,26 +17,25 @@ $(document).ready(() => {
     indicator = $('input[name=flexRadioDefault]:checked')[0].id.replace('Radio','');
     initListeners();
     initMap();
+    resizeLayout();
+});
 
-    // Test for tray expansion
-    $(window).resize(() => {
-        console.log("resize!")
-        if (($(".tray").hasClass("expanded"))) {
-            if(($(window).width() >= 544)) {
-                $(".wrapper").css("grid-template-rows", "auto minmax(200px, 33%)")
-            } else {
-                $(".wrapper").css("grid-template-rows", "25% auto 25%")
-            }
-        } else {
-            if(($(window).width() >= 544)) {
-                $(".wrapper").css("grid-template-rows", "auto 0px")
-            } else {
-                $(".wrapper").css("grid-template-rows", "25% auto 0px")
-            }
-        }
-    })
-    
+function initListeners() {
+    // listener on radio buttons
+    $("input:radio[name=flexRadioDefault]").on("change", (e) => {
+        indicator = e.target.id.replace('Radio','');
+        mapData.eachLayer(layer => layer.setStyle(style(layer.feature)));
+    });
 
+    $('#timeSlider').on('input', (e) => {
+        let yearVal = $(e.target).val();
+        year = yearVal;
+        $('#timeLabel').text(String(yearVal));
+        mapData.eachLayer(layer => layer.setStyle(style(layer.feature)));
+    });
+};
+
+function toggleReportTray() {
     $("#toggleBtn").on("click", e => {
         if ($(".tray").hasClass("expanded")) {
             $(".tray").removeClass("expanded box")
@@ -56,27 +55,24 @@ $(document).ready(() => {
             
         }
     });
-
-});
-
-function updateGridTemplateRows() {
-    
 }
 
-
-function initListeners() {
-    // listener on radio buttons
-    $("input:radio[name=flexRadioDefault]").on("change", (e) => {
-        indicator = e.target.id.replace('Radio','');
-        mapData.eachLayer(layer => layer.setStyle(style(layer.feature)));
-    });
-
-    $('#timeSlider').on('input', (e) => {
-        let yearVal = $(e.target).val();
-        year = yearVal;
-        $('#timeLabel').text(String(yearVal));
-        mapData.eachLayer(layer => layer.setStyle(style(layer.feature)));
-    });
+function resizeLayout() {
+    $(window).resize(() => {
+        if (($(".tray").hasClass("expanded"))) {
+            if(($(window).width() >= 544)) {
+                $(".wrapper").css("grid-template-rows", "auto minmax(200px, 33%)")
+            } else {
+                $(".wrapper").css("grid-template-rows", "25% auto 25%")
+            }
+        } else {
+            if(($(window).width() >= 544)) {
+                $(".wrapper").css("grid-template-rows", "auto 0px")
+            } else {
+                $(".wrapper").css("grid-template-rows", "25% auto 0px")
+            }
+        }
+    })
 }
 
 function initMap() {
