@@ -57,24 +57,6 @@ function toggleReportTray() {
     });
 }
 
-function resizeLayout() {
-    $(window).resize(() => {
-        if (($(".tray").hasClass("expanded"))) {
-            if(($(window).width() >= 544)) {
-                $(".wrapper").css("grid-template-rows", "auto minmax(200px, 33%)")
-            } else {
-                $(".wrapper").css("grid-template-rows", "25% auto 25%")
-            }
-        } else {
-            if(($(window).width() >= 544)) {
-                $(".wrapper").css("grid-template-rows", "auto 0px")
-            } else {
-                $(".wrapper").css("grid-template-rows", "25% auto 0px")
-            }
-        }
-    })
-}
-
 function toggleReportTray() {
     $("#toggleBtn").on("click", e => {
         if ($(".tray").hasClass("expanded")) {
