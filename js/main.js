@@ -35,48 +35,23 @@ function initListeners() {
     });
 };
 
-function toggleReportTray() {
-    $("#toggleBtn").on("click", e => {
-        if ($(".tray").hasClass("expanded")) {
-            $(".tray").removeClass("expanded box")
+function expandTray() {
+    $(".tray").addClass("expanded box");
 
-            if(($(window).width() >= 544)) {
-                $(".wrapper").css("grid-template-rows", "auto 0px")
-            } else {
-                $(".wrapper").css("grid-template-rows", "25% auto 0px")
-            }
-        } else {
-            $(".tray").addClass("expanded box")
-            if(($(window).width() >= 544)) {
-                $(".wrapper").css("grid-template-rows", "auto minmax(200px, 33%)")
-            } else {
-                $(".wrapper").css("grid-template-rows", "25% auto 25%")
-            }
-            
-        }
-    });
+    if(($(window).width() >= 544)) {
+        $(".wrapper").css("grid-template-rows", "auto minmax(200px, 33%)");
+    } else {
+        $(".wrapper").css("grid-template-rows", "25% auto 25%");
+    }
 }
+function closeTray() {
+    $(".tray").removeClass("expanded box");
 
-function toggleReportTray() {
-    $("#toggleBtn").on("click", e => {
-        if ($(".tray").hasClass("expanded")) {
-            $(".tray").removeClass("expanded box")
-
-            if(($(window).width() >= 544)) {
-                $(".wrapper").css("grid-template-rows", "auto 0px")
-            } else {
-                $(".wrapper").css("grid-template-rows", "25% auto 0px")
-            }
-        } else {
-            $(".tray").addClass("expanded box")
-            if(($(window).width() >= 544)) {
-                $(".wrapper").css("grid-template-rows", "auto minmax(200px, 33%)")
-            } else {
-                $(".wrapper").css("grid-template-rows", "25% auto 25%")
-            }
-            
-        }
-    });
+    if(($(window).width() >= 544)) {
+        $(".wrapper").css("grid-template-rows", "auto 0px");
+    } else {
+        $(".wrapper").css("grid-template-rows", "25% auto 0px");
+    }
 }
 
 function resizeLayout() {
@@ -107,7 +82,10 @@ function initMap() {
 
     // --------------------- add data to the map ---------------
     fetchJSON('./data/vdem_15s.json').then((data) => {
-        mapData = L.geoJSON(data, {style: style}).addTo(map);;
+        mapData = L.geoJSON(data, {
+            style: style,
+            onEachFeature: onEachFeature
+        }).addTo(map);;
         console.log('mapData added to map');
     });
 }
@@ -137,4 +115,15 @@ function getColor(d, colorScale) {
            d > .4 ? colorScale[2] :
            d > .3 ? colorScale[1] :
                     colorScale[0];
+}
+
+function createCountryReport() {
+    console.log("country clicked")
+    expandTray();
+}
+
+function onEachFeature(feature, layer) {
+    layer.on({
+        click: createCountryReport
+    })
 }
