@@ -17,8 +17,10 @@ $(document).ready(() => {
     indicator = $('input[name=flexRadioDefault]:checked')[0].id.replace('Radio','');
     initListeners();
     initMap();
-});
+    resizeLayout();
+    $(".tray-close").on("click", () => closeTray())
 
+});
 
 function initListeners() {
     // listener on radio buttons
@@ -33,6 +35,44 @@ function initListeners() {
         $('#timeLabel').text(String(yearVal));
         mapData.eachLayer(layer => layer.setStyle(style(layer.feature)));
     });
+};
+
+function expandTray() {
+    $(".tray").addClass("expanded box");
+
+    if(($(window).width() >= 544)) {
+        $(".wrapper").css("grid-template-rows", "auto minmax(200px, 33%)");
+    } else {
+        $(".wrapper").css("grid-template-rows", "25% auto 25%");
+    }
+}
+function closeTray() {
+    console.log("close tray!")
+    $(".tray").removeClass("expanded box");
+
+    if(($(window).width() >= 544)) {
+        $(".wrapper").css("grid-template-rows", "auto 0px");
+    } else {
+        $(".wrapper").css("grid-template-rows", "25% auto 0px");
+    }
+}
+
+function resizeLayout() {
+    $(window).resize(() => {
+        if (($(".tray").hasClass("expanded"))) {
+            if(($(window).width() >= 544)) {
+                $(".wrapper").css("grid-template-rows", "auto minmax(200px, 33%)")
+            } else {
+                $(".wrapper").css("grid-template-rows", "25% auto 25%")
+            }
+        } else {
+            if(($(window).width() >= 544)) {
+                $(".wrapper").css("grid-template-rows", "auto 0px")
+            } else {
+                $(".wrapper").css("grid-template-rows", "25% auto 0px")
+            }
+        }
+    })
 }
 
 function initMap() {
@@ -45,7 +85,10 @@ function initMap() {
 
     // --------------------- add data to the map ---------------
     fetchJSON('./data/vdem_15s.json').then((data) => {
-        mapData = L.geoJSON(data, {style: style}).addTo(map);;
+        mapData = L.geoJSON(data, {
+            style: style,
+            onEachFeature: onEachFeature
+        }).addTo(map);;
         console.log('mapData added to map');
     });
 }
@@ -75,4 +118,15 @@ function getColor(d, colorScale) {
            d > .4 ? colorScale[2] :
            d > .3 ? colorScale[1] :
                     colorScale[0];
+}
+
+function createCountryReport() {
+    console.log("country clicked")
+    expandTray();
+}
+
+function onEachFeature(feature, layer) {
+    layer.on({
+        click: createCountryReport
+    })
 }
