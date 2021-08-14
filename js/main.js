@@ -18,6 +18,8 @@ $(document).ready(() => {
     initListeners();
     initMap();
     resizeLayout();
+    $(".tray-close").on("click", () => closeTray())
+
 });
 
 function initListeners() {
@@ -45,6 +47,7 @@ function expandTray() {
     }
 }
 function closeTray() {
+    console.log("close tray!")
     $(".tray").removeClass("expanded box");
 
     if(($(window).width() >= 544)) {
