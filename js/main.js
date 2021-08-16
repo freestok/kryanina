@@ -84,7 +84,7 @@ function initMap() {
     }).addTo(map);
 
     // --------------------- add data to the map ---------------
-    fetchJSON('./data/vdem_15s.json').then((data) => {
+    fetchJSON('./data/vdem.min.json').then((data) => {
         mapData = L.geoJSON(data, {
             style: style,
             onEachFeature: onEachFeature
