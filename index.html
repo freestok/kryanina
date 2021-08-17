@@ -19,6 +19,12 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.1.2/chroma.min.js" integrity="sha512-8TVPS0EFkkmtT6yPb5K4csnSt3tjbKRrs0F8gvTNKv2OxOcwDO7+Klkz86gMVrzfqtZos5N2a+k+r9D+hlccmQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.slim.min.js" integrity="sha256-u7e5khyithlIdTpu22PHhENmPcRdFiHRjhAuHcs05RI=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.5.0/dist/chart.min.js"></script>
+
+    <!-- C3.js -->
+    <link rel="stylesheet" href="lib/c3.css">
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script src="lib/c3.js"></script>
 
 </head>
 
@@ -81,7 +87,10 @@
                     <div class="modal-body report-container">
                         <div class="report-attributes"></div>
                         <div class="report-indicator-line"></div>
-                        <div class="report-indicator-bar"></div>  
+                        <div class="report-indicator-bar">
+                            <!-- <canvas id="report-indicator-bar-chart" height="100%"></canvas> -->
+                            <div id="report-indicator-bar-chart"></div>
+                        </div>  
                     </div>
                 </div>
             </div>

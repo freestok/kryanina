@@ -31,6 +31,7 @@ html, body {
     background-color:#F9EFE6;
     border: none;
     border-radius: 0;
+    height: 100%;
 }
 
 .report-attributes {
@@ -43,17 +44,18 @@ html, body {
     grid-area: report-indicator-bar;
 }
 
+
 .report-container {
     display: grid;
     grid-template-columns: auto;
-    grid-template-rows: repeat(3, minmax(200px, 100%));
+    grid-template-rows: repeat(3, minmax(90%, 100%));
     grid-template-areas: "report-attributes" 
                          "report-indicator-line" "report-indicator-bar";
     overflow-y: auto;
     row-gap: 5px;
 }
 .report-container > div {
-    background-color: green;
+    background-color:#F9EFE6;
 }
 
 .wrapper {
@@ -78,8 +80,8 @@ html, body {
                              "sidebar  tray";
     }
     .report-container {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        grid-template-rows: minmax(175px, 90%);
+        grid-template-columns: repeat(3, minmax(280px, 1fr));
+        grid-template-rows: minmax(180px, 90%);
         grid-template-areas: "report-attributes report-indicator-line report-indicator-bar";
         column-gap: 5px;
     }
