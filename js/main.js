@@ -1,14 +1,16 @@
 // -----------------------------------
 // --------- GLOBAL VARIABLES --------
-let year = 2020,
+let year = '2020',
     indicator,
+    checked = '',
     mapData,
     colorScales = {
         reds: chroma.scale('reds').colors(8),
         oranges: chroma.scale('oranges').colors(8),
         blues: chroma.scale('blues').colors(8),
         greens: chroma.scale('greens').colors(8),
-        purples: chroma.scale('purples').colors(8)
+        purples: chroma.scale('purples').colors(8),
+        diverging: chroma.scale('RdBu').domain([-1, 1])
     };
 // -----------------------------------
 // -----------------------------------
@@ -30,9 +32,32 @@ function initListeners() {
     });
 
     $('#timeSlider').on('input', (e) => {
-        let yearVal = $(e.target).val();
-        year = yearVal;
-        $('#timeLabel').text(String(yearVal));
+        year =  $(e.target).val();
+        $('#timeLabel').text(String(year));
+        mapData.eachLayer(layer => layer.setStyle(style(layer.feature)));
+    });
+
+    $('#tenYrToggle').on('change', e => {
+        let timeSlider = $('#timeSlider');
+        let val = Number(timeSlider.val());
+
+        console.log('timeslider', timeSlider);
+        console.log(timeSlider.val());
+        // change checked value and update slider rules
+        if (e.target.checked) {
+            checked = 'c';
+            if (val < 2010) {
+                year = '2010'
+                timeSlider.val(year);
+                $('#timeLabel').text(String(year));
+            }
+            document.getElementById('timeSlider').min = '2010';
+        } else {
+            checked = '';
+            document.getElementById('timeSlider').min = '2000';
+        }
+
+        // update symbology
         mapData.eachLayer(layer => layer.setStyle(style(layer.feature)));
     });
 };
@@ -100,8 +125,14 @@ async function fetchJSON(url) {
 }
 
 function style(feature) {
+    let color;
+    if (checked === 'c') { // if checked (i.e. show 10 year change)
+        color = colorScales.diverging(feature.properties[`${indicator}${year}${checked}`])
+    } else {
+        color = getColor(feature.properties[`${indicator}${year}${checked}`], colorScales.purples);
+    }
     return {
-        fillColor: getColor(feature.properties[`${indicator}${year}`], colorScales.purples),
+        fillColor: color,
         weight: .75,
         opacity: 1,
         color: '#191919',
