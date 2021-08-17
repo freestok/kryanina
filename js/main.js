@@ -28,8 +28,8 @@ async function initd3Map() {
     // https://observablehq.com/@harrystevens/dorling-cartogram
 
     $('#map').hide();
-    let width = 960;
-    let height = width * .49;
+    const width = 960;
+    const height = width * .49;
 
     // Find the centroid of the largest polygon
     const centroid = (feature) => {
@@ -98,9 +98,11 @@ async function initd3Map() {
 
     const svg = d3.select('div#d3Map')
         .append("svg")
-        .attr("width", width)
-        .attr("height", height)
-        .attr("overflow", "visible");
+        // .attr("width", width)
+        // .attr("height", height)
+        // .attr("overflow", "visible");
+        .attr("preserveAspectRatio", "xMinYMin meet")
+        .attr("viewBox", `0 0 ${width} ${height}`);
 
     svg.selectAll(".country")
         .data(geo.features)
