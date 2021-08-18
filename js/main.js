@@ -18,117 +18,13 @@ let year = '2020',
 $(document).ready(() => {
     indicator = $('input[name=flexRadioDefault]:checked')[0].id.replace('Radio','');
     initListeners();
-    // initMap();
+    initMap();
     initd3Map();
     resizeLayout();
     $(".tray-close").on("click", () => closeTray())
 });
 
-async function initd3Map() {
-    // https://observablehq.com/@harrystevens/dorling-cartogram
 
-    $('#map').hide();
-    const width = 960;
-    const height = width * .49;
-
-    // Find the centroid of the largest polygon
-    const centroid = (feature) => {
-        const geometry = feature.geometry;
-        if (geometry.type === "Polygon") {
-            return d3.geoCentroid(feature);
-        }
-        else {
-            let largestPolygon = {}, largestArea = 0;
-            geometry.coordinates.forEach(coordinates => {
-                const polygon = { type: "Polygon", coordinates },
-                    area = d3.geoArea(polygon);
-                if (area > largestArea) {
-                    largestPolygon = polygon;
-                    largestArea = area;
-                }
-            });
-            return d3.geoCentroid(largestPolygon);
-        }
-    }
-
-
-    // // set legend
-    // const legend = legendCircle()
-    //     .tickValues([50e6, 200e6, 500e6, 1000e6])
-    //     .tickFormat((d, i, e) => {
-    //         const val = d >= 1e9 ? `${d / 1e9}B` : `${d / 1e6}M`;
-    //         const unit = i === e.length - 1 ? " people" : "";
-    //         return `${val}${unit}`;
-    //     })
-    //     .scale(r);
-
-    // get geometry data and calculate centroid
-    const topo = await d3.json('./data/ne_110m_admin_0_countries_lakes.json');
-    console.log('topo', topo);
-    const geo = topojson.feature(topo, topo.objects.ne_110m_admin_0_countries_lakes);
-    geo.features.forEach(feature => {
-        feature.centroid = centroid(feature);
-        return feature;
-    });
-
-    // scale
-    const r = d3.scaleSqrt()
-        .domain([0, d3.max(geo.features, d => d.properties.POP_EST)])
-        .range([0, Math.sqrt(width * height) / 10])
-
-    // set projection and path
-    const projection = d3.geoEqualEarth()
-        .rotate([-10, 0, 0])
-        .fitSize([width, height], { type: "Sphere" });
-
-    const path = d3.geoPath(projection);
-
-
-    // stop collisions
-    const simulation = d3.forceSimulation(geo.features)
-        .force("x", d3.forceX(d => projection(d.centroid)[0]))
-        .force("y", d3.forceY(d => projection(d.centroid)[1]))
-        .force("collide", d3.forceCollide(d => 1 + r(d.properties.POP_EST)))
-        .stop();
-
-    // now create the SVG
-    for (let i = 0; i < 200; i++) {
-        simulation.tick();
-    }
-
-    const svg = d3.select('div#d3Map')
-        .append("svg")
-        // .attr("width", width)
-        // .attr("height", height)
-        // .attr("overflow", "visible");
-        .attr("preserveAspectRatio", "xMinYMin meet")
-        .attr("viewBox", `0 0 ${width} ${height}`);
-
-    svg.selectAll(".country")
-        .data(geo.features)
-        .enter().append("path")
-        .attr("class", "country")
-        .attr("d", path)
-        .attr("fill", "#f5f5f5")
-        .attr("stroke", "#e0e0e0")
-        .style("display", 'block');
-        // .style("display", show === "show" ? "block" : "none");
-
-    svg.selectAll("circle")
-        .data(geo.features)
-        .enter().append("circle")
-        .attr("r", d => r(d.properties.POP_EST))
-        .attr("cx", d => d.x)
-        .attr("cy", d => d.y)
-        .attr("fill", "steelblue")
-        .attr("fill-opacity", 0.3)
-        .attr("stroke", "steelblue");
-
-    // svg.append("g")
-    //     .attr("transform", `translate(0, ${height - 150})`)
-    //     .call(legend);
-
-}
 function initListeners() {
     // listener on radio buttons
     $("input:radio[name=flexRadioDefault]").on("change", (e) => {
@@ -266,3 +162,138 @@ function onEachFeature(feature, layer) {
         click: createCountryReport
     })
 }
+
+
+// -----------------------------------------------------------------------------
+// ------------------------------- d3 stuff ------------------------------------
+// -----------------------------------------------------------------------------
+async function initd3Map() {
+    // https://observablehq.com/@harrystevens/dorling-cartogram
+
+    $('#map').hide();
+    const width = 960;
+    const height = width * .49;
+
+    // Find the centroid of the largest polygon
+    const centroid = (feature) => {
+        const geometry = feature.geometry;
+        if (geometry.type === "Polygon") {
+            return d3.geoCentroid(feature);
+        }
+        else {
+            let largestPolygon = {}, largestArea = 0;
+            geometry.coordinates.forEach(coordinates => {
+                const polygon = { type: "Polygon", coordinates },
+                    area = d3.geoArea(polygon);
+                if (area > largestArea) {
+                    largestPolygon = polygon;
+                    largestArea = area;
+                }
+            });
+            return d3.geoCentroid(largestPolygon);
+        }
+    }
+
+
+    // // set legend
+    // const legend = legendCircle()
+    //     .tickValues([50e6, 200e6, 500e6, 1000e6])
+    //     .tickFormat((d, i, e) => {
+    //         const val = d >= 1e9 ? `${d / 1e9}B` : `${d / 1e6}M`;
+    //         const unit = i === e.length - 1 ? " people" : "";
+    //         return `${val}${unit}`;
+    //     })
+    //     .scale(r);
+
+    // get geometry data and calculate centroid
+    const topo = await d3.json('./data/vdem.topo.json');
+    const geo = topojson.feature(topo, topo.objects.countries_pop);
+    geo.features.forEach(feature => {
+        feature.centroid = centroid(feature);
+        return feature;
+    });
+
+    console.log('geo features', geo.features);
+
+    // scale
+    const r = d3.scaleSqrt()
+        .domain([0, d3.max(geo.features, d => d.properties.population)])
+        .range([0, Math.sqrt(width * height) / 10])
+
+    // set projection and path
+    const projection = d3.geoEqualEarth()
+        .rotate([-10, 0, 0])
+        .fitSize([width, height], { type: "Sphere" });
+
+    const path = d3.geoPath(projection);
+
+
+    // stop collisions
+    const simulation = d3.forceSimulation(geo.features)
+        .force("x", d3.forceX(d => projection(d.centroid)[0]))
+        .force("y", d3.forceY(d => projection(d.centroid)[1]))
+        .force("collide", d3.forceCollide(d => 1 + r(d.properties.population)))
+        .stop();
+
+    // now create the SVG
+    for (let i = 0; i < 200; i++) {
+        simulation.tick();
+    }
+
+    const svg = d3.select('div#d3Map')
+        .append("svg")
+        // .attr("width", width)
+        // .attr("height", height)
+        // .attr("overflow", "visible");
+        .attr("preserveAspectRatio", "xMinYMin meet")
+        .attr("viewBox", `0 0 ${width} ${height}`);
+
+    const g = svg.append('g');
+    const world = g.append('g')
+        .attr("fill", "#cce5f1")
+        .attr("stroke", "#cce5f1")
+        .selectAll('.country')
+            .data(geo.features)
+            .enter().append("path")
+            .attr("class", "country")
+            .attr("d", path)
+            .attr("fill", "#cce5f1")
+            .attr("stroke", "#cce5f1")
+            .style("display", 'block');
+
+
+    const g2 = svg.append('g');
+    // don't show western sahara or greenland population, no dem data for them
+    let exclude = ['W. Sahara','Greenland']
+    geo.features = geo.features.filter(e => !exclude.includes(e.properties.country_name))
+
+    g2.append('g')
+        .selectAll("circle")
+            .data(geo.features)
+            .enter().append("circle")
+            .attr("r", d => r(d.properties.population))
+            .attr("cx", d => d.x)
+            .attr("cy", d => d.y)
+            .attr("fill", d => {
+                console.log('d', d);
+                return getColor(d.properties[`${indicator}${year}${checked}`], colorScales.purples)
+            })
+            .attr("fill-opacity", 0.3)
+            // .attr("stroke", "steelblue")
+            .attr('stroke', 'grey')
+            .attr('cursor', 'pointer');
+
+    // zoom function
+    const zoom = d3.zoom()
+        .scaleExtent([1, 8])
+        .on("zoom", zoomed);
+    svg.call(zoom);
+    function zoomed(event) {
+        const { transform } = event;
+        g.attr("transform", transform);
+        g.attr("stroke-width", 1 / transform.k);
+        g2.attr("transform", transform);
+        g2.attr("stroke-width", 1 / transform.k);
+    }
+}
+
