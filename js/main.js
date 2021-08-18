@@ -45,6 +45,7 @@ function initListeners() {
         $('#timeLabel').text(String(year));
         mapData.eachLayer(layer => layer.setStyle(style(layer.feature)));
         updateD3Symbology();
+        createCountryReport(selectedCountry, parseInt(year));
     });
 
     $('#tenYrToggle').on('change', e => {
@@ -66,7 +67,6 @@ function initListeners() {
             checked = '';
             document.getElementById('timeSlider').min = '2000';
         }
-
         // update symbology
         mapData.eachLayer(layer => layer.setStyle(style(layer.feature)));
         updateD3Symbology();
@@ -361,6 +361,7 @@ function onEachFeature(feature, layer) {
             selectedCountry = feature.properties.country_name;            
             createCountryReport(selectedCountry, year)
             expandTray();
+            map.invalidateSize();
             map.fitBounds(e.target.getBounds())
         }
     })
