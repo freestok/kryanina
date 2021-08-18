@@ -1,8 +1,11 @@
 // -----------------------------------
 // --------- GLOBAL VARIABLES --------
 let year = '2020',
+    selectedCountry = null,
     indicator,
     checked = '',
+    map,
+    mapJSON,
     mapData,
     colorScales = {
         reds: chroma.scale('reds').colors(8),
@@ -11,7 +14,9 @@ let year = '2020',
         greens: chroma.scale('greens').colors(8),
         purples: chroma.scale('purples').colors(8),
         diverging: chroma.scale('RdBu').domain([-1, 1])
-    };
+    },
+    barChart,
+    timeSeriesChart;
 // -----------------------------------
 // -----------------------------------
 
@@ -31,6 +36,7 @@ function initListeners() {
         indicator = e.target.id.replace('Radio','');
         mapData.eachLayer(layer => layer.setStyle(style(layer.feature)));
         updateD3Symbology();
+        createCountryReport(selectedCountry, parseInt(year));
     });
 
     $('#timeSlider').on('input', (e) => {
@@ -63,20 +69,23 @@ function initListeners() {
         // update symbology
         mapData.eachLayer(layer => layer.setStyle(style(layer.feature)));
         updateD3Symbology();
+        createCountryReport(selectedCountry, parseInt(year));
     });
+
+    
+
 };
 
 function expandTray() {
     $(".tray").addClass("expanded box");
 
     if(($(window).width() >= 544)) {
-        $(".wrapper").css("grid-template-rows", "auto minmax(200px, 33%)");
+        $(".wrapper").css("grid-template-rows", "auto minmax(200px, 50%)");
     } else {
         $(".wrapper").css("grid-template-rows", "25% auto 25%");
     }
 }
 function closeTray() {
-    console.log("close tray!")
     $(".tray").removeClass("expanded box");
 
     if(($(window).width() >= 544)) {
@@ -90,7 +99,7 @@ function resizeLayout() {
     $(window).resize(() => {
         if (($(".tray").hasClass("expanded"))) {
             if(($(window).width() >= 544)) {
-                $(".wrapper").css("grid-template-rows", "auto minmax(200px, 33%)")
+                $(".wrapper").css("grid-template-rows", "auto minmax(200px, 50%)")
             } else {
                 $(".wrapper").css("grid-template-rows", "25% auto 25%")
             }
@@ -106,7 +115,7 @@ function resizeLayout() {
 
 function initMap() {
     // set-up map and basemap
-    const map = L.map('map').setView([39.47, 0], 2);
+    map = L.map('map').setView([39.47, 0], 2);
     L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
         attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ',
         maxZoom: 16
@@ -114,10 +123,11 @@ function initMap() {
 
     // --------------------- add data to the map ---------------
     fetchJSON('./data/vdem.min.json').then((data) => {
-        mapData = L.geoJSON(data, {
+        mapJSON = data;
+        mapData = L.geoJSON(mapJSON, {
             style: style,
             onEachFeature: onEachFeature
-        }).addTo(map);;
+        }).addTo(map);
         console.log('mapData added to map');
     });
 }
@@ -155,14 +165,195 @@ function getColor(d, colorScale) {
                     colorScale[0];
 }
 
-function createCountryReport() {
-    console.log("country clicked")
-    expandTray();
+
+function createCountryReport(country, year) {
+    // Retrieve attribute data for selected country
+    let selectedCountryAttributes = mapJSON.features
+        .filter(feature => feature.properties.country_name == country)[0].properties
+    
+    //############//
+    // PROCESSING //
+    //############//
+
+    // A helper object for translating the selected indicator value into the actual indicator term it represents
+    let indicatorTranslationObject = {
+        el: "Electoral",
+        li: "Liberal",
+        pa: "Participatory",
+        de: "Deliberative",
+        eg: "Egalitarian"
+    }
+
+    // BAR CHART
+    // Generate array of fields for the selected year
+    let attributeYearKeys = ["el", "li", "pa", "de", "eg"].map(attr => `${attr}${year}`)
+
+    // Filter the attribute data to only the fields for the selected year
+    let attributeYearData = Object.keys(selectedCountryAttributes)
+        .filter(key => attributeYearKeys.includes(key))
+        .reduce((obj, key) => {
+            obj[key] = selectedCountryAttributes[key];
+            return obj;
+        }, {})
+
+    // TIMESERIES CHART
+    // Reduce the selected country's data down to just the annual columns for the selected indicator
+    let indicatorYearObject = Object.keys(selectedCountryAttributes)
+        .filter(key => key.substring(0, 2)  == indicator & key.substring(key.length - 1) != "c")
+        .reduce((obj, key) => {
+            obj[key] = selectedCountryAttributes[key];
+            return obj;
+        }, {})
+
+    // Convert the keys to an array of years 
+    let timeSeriesYears = Object.keys(indicatorYearObject)
+        .map(key => key.substring(2,))
+    
+    // Convert the indicator year object into an array of the values
+    let timeSeriesValues = Object.keys(indicatorYearObject)
+        .map(key => indicatorYearObject[key])
+    
+    
+    // Format result for use in C3.js
+    let indicatorTimeSeriesColumns = [
+        ["x", ...timeSeriesYears],
+        [indicatorTranslationObject[indicator], ...timeSeriesValues]
+    ]    
+
+    //#################//
+    // GENERATE REPORT //
+    //#################//
+    $(".report-country-name").text(selectedCountry);
+    $("#report-attributes-list").empty();
+    $.each(attributeYearData, (key, value) => {
+        $("#report-attributes-list").append(`<li><b>${indicatorTranslationObject[key.substring(0,2)]}: </b>${value}</li>`)
+    });
+    createTimeSeriesChart(indicatorTimeSeriesColumns);
+    createBarChart(attributeYearData);
+}
+
+function createBarChart(data) {
+    barChart = c3.generate({
+        bindto: "#report-indicator-bar-chart",
+        size: {
+            height: $(".report-indicator-bar").height(),
+            width: $(".report-indicator-bar").width()
+        },
+        oninit: () => {
+            setTimeout(() => {
+                resizeChart(barChart, ".report-indicator-bar")
+            }, 1)
+        },
+        onresized: () => {
+            resizeChart(barChart, ".report-indicator-bar")
+        },
+        data: {
+            columns: [
+                ["Electoral", data[`el${year}`]],
+                ["Liberal", data[`li${year}`]],
+                ["Participatory", data[`pa${year}`]],
+                ["Deliberative", data[`de${year}`]],
+                ["Egalitarian", data[`eg${year}`]]
+            ],
+            type: "bar",
+            colors: {
+                Electoral: colorScales.reds[5],
+                Liberal: colorScales.oranges[5],
+                Participatory: colorScales.blues[5],
+                Deliberative: colorScales.greens[5],
+                Egalitarian: colorScales.purples[5],
+            }
+        },
+        bar: {
+            width: {
+                ratio: 0.95
+            }
+        },
+        axis: {
+            x: {
+                padding: {
+                    left: 0,
+                    right: 0,
+                },
+                show: false
+            },
+            y: {
+                min: 0,
+                max: 1,
+                padding: {
+                    top: 0,
+                    bottom: 0
+                }
+            },
+        },
+        legend: {
+            item: {
+                onclick: () => undefined,
+                onmouseover: () => undefined
+            }
+        }
+    });
+}
+function resizeChart(chart, el) {
+    chart.resize({
+        height: $(el).height(),
+        width: $(el).width()
+    })
+}
+
+function createTimeSeriesChart(data) {
+    timeSeriesChart = c3.generate({
+        bindto: "#report-indicator-time-series-chart",
+        size: {
+            height: $(".report-indicator-time-series").height(),
+            width: $(".report-indicator-time-series").width()
+        },
+        oninit: () => {
+            setTimeout(() => {
+                resizeChart(timeSeriesChart, ".report-indicator-time-series")
+            }, 1)
+        },
+        onresized: () => {
+            resizeChart(timeSeriesChart, ".report-indicator-time-series")
+        },
+        transition: {
+            duration: 0
+        },
+        data: {
+            x: "x",
+            columns: data,
+            color: (color, d) => "#4E342E",
+        },
+        axis: {
+            type: "timeseries",
+            tick: {
+                format: "%Y"
+            },
+            y: {
+                min: 0,
+                max: 1,
+                padding: {
+                    top: 0,
+                    bottom: 0
+                }
+            }
+        },
+        legend: {
+            item: {
+                onclick: () => undefined
+            }
+        }
+    })
 }
 
 function onEachFeature(feature, layer) {
     layer.on({
-        click: createCountryReport
+        click: (e) => {
+            selectedCountry = feature.properties.country_name;            
+            createCountryReport(selectedCountry, year)
+            expandTray();
+            map.fitBounds(e.target.getBounds())
+        }
     })
 }
 
@@ -173,7 +364,6 @@ function onEachFeature(feature, layer) {
 async function initd3Map() {
     // https://observablehq.com/@harrystevens/dorling-cartogram
 
-    $('#map').hide();
     const width = 960;
     const height = width * .49;
 

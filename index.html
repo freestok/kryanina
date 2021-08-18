@@ -22,6 +22,12 @@
     <script src="https://code.jquery.com/jquery-3.6.0.slim.min.js" integrity="sha256-u7e5khyithlIdTpu22PHhENmPcRdFiHRjhAuHcs05RI=" crossorigin="anonymous"></script>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://unpkg.com/topojson@3"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.5.0/dist/chart.min.js"></script>
+
+    <!-- C3.js -->
+    <link rel="stylesheet" href="lib/c3.css">
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script src="lib/c3.js"></script>
 
 </head>
 
@@ -69,21 +75,23 @@
                 <div class="row mt-4" id="advancedRow">
                     <div class="accordion accordion-flush" id="advancedMenu">
                         <div class="accordion-item">
-                          <h2 class="accordion-header" id="flush-headingOne">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseOne" aria-expanded="false" aria-controls="flush-collapseOne">
-                              Advanced Menu
-                            </button>
-                          </h2>
-                          <div id="flush-collapseOne" class="accordion-collapse collapse" aria-labelledby="flush-headingOne" data-bs-parent="#advancedMenu">
-                            <div class="accordion-body">
-                                <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" id="tenYrToggle">
-                                    <label class="form-check-label" for="tenYrToggle">Show 10-year change</label>
-                                  </div>
+                            <h2 class="accordion-header" id="flush-headingOne">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#flush-collapseOne" aria-expanded="false" aria-controls="flush-collapseOne">
+                                    Advanced Menu
+                                </button>
+                            </h2>
+                            <div id="flush-collapseOne" class="accordion-collapse collapse" aria-labelledby="flush-headingOne"
+                                data-bs-parent="#advancedMenu">
+                                <div class="accordion-body">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="tenYrToggle">
+                                        <label class="form-check-label" for="tenYrToggle">Show 10-year change</label>
+                                    </div>
+                                </div>
                             </div>
-                          </div>
                         </div>
-                      </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -96,13 +104,21 @@
             <div class="tray-container">
                 <div class="modal-content tray-content">
                     <div class="modal-header">
-                        <h5 class="modal-title">Title</h5>
+                        <h5 class="modal-title report-country-name">Title</h5>
                         <button type="button" class="close tray-close" data-dismiss="modal" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                           </button>
                     </div>
-                    <div class="modal-body">
-                        <p>Modal body!</p>
+                    <div class="modal-body report-container">
+                        <div class="report-attributes">
+                            <ul id="report-attributes-list"></ul>
+                        </div>
+                        <div class="report-indicator-time-series">
+                            <div id="report-indicator-time-series-chart"></div>
+                        </div>
+                        <div class="report-indicator-bar">
+                            <div id="report-indicator-bar-chart"></div>
+                        </div>  
                     </div>
                 </div>
             </div>
