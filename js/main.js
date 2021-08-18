@@ -30,14 +30,14 @@ function initListeners() {
     $("input:radio[name=flexRadioDefault]").on("change", (e) => {
         indicator = e.target.id.replace('Radio','');
         mapData.eachLayer(layer => layer.setStyle(style(layer.feature)));
-        updateD3Symbology(colorScales.purples);
+        updateD3Symbology();
     });
 
     $('#timeSlider').on('input', (e) => {
         year =  $(e.target).val();
         $('#timeLabel').text(String(year));
         mapData.eachLayer(layer => layer.setStyle(style(layer.feature)));
-        updateD3Symbology(colorScales.purples);
+        updateD3Symbology();
     });
 
     $('#tenYrToggle').on('change', e => {
@@ -62,7 +62,7 @@ function initListeners() {
 
         // update symbology
         mapData.eachLayer(layer => layer.setStyle(style(layer.feature)));
-        updateD3Symbology(colorScales.purples);
+        updateD3Symbology();
     });
 };
 
@@ -278,10 +278,7 @@ async function initd3Map() {
             .attr("r", d => r(d.properties.population))
             .attr("cx", d => d.x)
             .attr("cy", d => d.y)
-            .attr("fill", d => {
-                console.log('d', d);
-                return getColor(d.properties[`${indicator}${year}${checked}`], colorScales.purples)
-            })
+            .attr("fill", d => getColor(d.properties[`${indicator}${year}${checked}`], colorScales.purples))
             .attr("fill-opacity", 0.7)
             // .attr("stroke", "steelblue")
             .attr('stroke', 'grey')
@@ -290,18 +287,17 @@ async function initd3Map() {
     // zoom function
     const zoom = d3.zoom()
         .scaleExtent([1, 8])
-        .on("zoom", zoomed);
+        .on("zoom", event => {
+            const { transform } = event;
+            g.attr("transform", transform);
+            g.attr("stroke-width", 1 / transform.k);
+            g2.attr("transform", transform);
+            g2.attr("stroke-width", 1 / transform.k);        
+        });
     svg.call(zoom);
-    function zoomed(event) {
-        const { transform } = event;
-        g.attr("transform", transform);
-        g.attr("stroke-width", 1 / transform.k);
-        g2.attr("transform", transform);
-        g2.attr("stroke-width", 1 / transform.k);
-    }
 }
 
-function updateD3Symbology(colorScale) {
+function updateD3Symbology() {
     let color;
     d3.selectAll("circle")
         .attr("fill", d => {
