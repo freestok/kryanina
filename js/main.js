@@ -13,7 +13,8 @@ let year = 2020,
         greens: chroma.scale('greens').colors(8),
         purples: chroma.scale('purples').colors(8)
     },
-    barChart;
+    barChart,
+    timeSeriesChart;
 // -----------------------------------
 // -----------------------------------
 
@@ -31,6 +32,7 @@ function initListeners() {
     $("input:radio[name=flexRadioDefault]").on("change", (e) => {
         indicator = e.target.id.replace('Radio','');
         mapData.eachLayer(layer => layer.setStyle(style(layer.feature)));
+        createCountryReport(selectedCountry, year);
     });
 
     $('#timeSlider').on('input', (e) => {
@@ -38,6 +40,7 @@ function initListeners() {
         year = yearVal;
         $('#timeLabel').text(String(yearVal));
         mapData.eachLayer(layer => layer.setStyle(style(layer.feature)));
+        createCountryReport(selectedCountry, year);
     });
 };
 
@@ -126,15 +129,28 @@ function getColor(d, colorScale) {
 }
 
 
-function createCountryReport() {
-    map.fitBounds(this.getBounds())
-    // Get selected country
-    selectedCountry = this.feature.properties.country_name;
-
+function createCountryReport(country, year) {
     // Retrieve attribute data for selected country
     let selectedCountryAttributes = mapJSON.features
-    .filter(feature => feature.properties.country_name == selectedCountry)[0].properties
+        .filter(feature => feature.properties.country_name == country)[0].properties
+
+    console.log(selectedCountryAttributes)
+    console.log(indicator)
     
+    //############//
+    // PROCESSING //
+    //############//
+
+    // A helper object for translating the selected indicator value into the actual indicator term it represents
+    let indicatorTranslationObject = {
+        el: "Electoral",
+        li: "Liberal",
+        pa: "Participatory",
+        de: "Deliberative",
+        eg: "Egalitarian"
+    }
+
+    // BAR CHART
     // Generate array of fields for the selected year
     let attributeYearKeys = ["el", "li", "pa", "de", "eg"].map(attr => `${attr}${year}`)
 
@@ -145,17 +161,41 @@ function createCountryReport() {
             obj[key] = selectedCountryAttributes[key];
             return obj;
         }, {})
-    // Generate report
-    $(".report-country-name").text(selectedCountry);
 
-    // Bar Graph
-    createBarChart(attributeYearData)
+    // TIMESERIES CHART
+    // Reduce the selected country's data down to just the annual columns for the selected indicator
+    let indicatorYearObject = Object.keys(selectedCountryAttributes)
+        .filter(key => key.substring(0, 2) == indicator)
+        .reduce((obj, key) => {
+            obj[key] = selectedCountryAttributes[key];
+            return obj;
+        }, {})
+
+    // Convert the keys to an array of years 
+    let timeSeriesYears = Object.keys(indicatorYearObject)
+        .map(key => key.substring(2,))
     
-    // Expand tray
-    expandTray();
+    // Convert the indicator year object into an array of the values
+    let timeSeriesValues = Object.keys(indicatorYearObject)
+        .map(key => indicatorYearObject[key])
+    
+    
+    // Format result for use in C3.js
+    let indicatorTimeSeriesColumns = [
+        ["x", ...timeSeriesYears],
+        [indicatorTranslationObject[indicator], ...timeSeriesValues]
+    ]    
 
-    // Zoom to selected country
-    map.fitBounds(this.getBounds())
+    //#################//
+    // GENERATE REPORT //
+    //#################//
+    $(".report-country-name").text(selectedCountry);
+    $("#report-attributes-list").empty();
+    $.each(attributeYearData, (key, value) => {
+        $("#report-attributes-list").append(`<li><b>${indicatorTranslationObject[key.substring(0,2)]}: </b>${value}</li>`)
+    });
+    createTimeSeriesChart(indicatorTimeSeriesColumns);
+    createBarChart(attributeYearData);
 }
 
 function createBarChart(data) {
@@ -167,11 +207,11 @@ function createBarChart(data) {
         },
         oninit: () => {
             setTimeout(() => {
-                resizeBarChart()
+                resizeChart(barChart, ".report-indicator-bar")
             }, 1)
         },
         onresized: () => {
-            resizeBarChart()
+            resizeChart(barChart, ".report-indicator-bar")
         },
         data: {
             columns: [
@@ -200,9 +240,7 @@ function createBarChart(data) {
                 padding: {
                     left: 0,
                     right: 0,
-                }
-            },
-            x: {
+                },
                 show: false
             },
             y: {
@@ -213,18 +251,74 @@ function createBarChart(data) {
                     bottom: 0
                 }
             },
+        },
+        legend: {
+            item: {
+                onclick: () => undefined,
+                onmouseover: () => undefined
+            }
         }
     });
 }
-function resizeBarChart() {
-    barChart.resize({
-        height: $(".report-indicator-bar").height(),
-        width: $(".report-indicator-bar").width()
+function resizeChart(chart, el) {
+    chart.resize({
+        height: $(el).height(),
+        width: $(el).width()
+    })
+}
+
+function createTimeSeriesChart(data) {
+    timeSeriesChart = c3.generate({
+        bindto: "#report-indicator-time-series-chart",
+        size: {
+            height: $(".report-indicator-time-series").height(),
+            width: $(".report-indicator-time-series").width()
+        },
+        oninit: () => {
+            setTimeout(() => {
+                resizeChart(timeSeriesChart, ".report-indicator-time-series")
+            }, 1)
+        },
+        onresized: () => {
+            resizeChart(timeSeriesChart, ".report-indicator-time-series")
+        },
+        transition: {
+            duration: 0
+        },
+        data: {
+            x: "x",
+            columns: data,
+            color: (color, d) => "#4E342E",
+        },
+        axis: {
+            type: "timeseries",
+            tick: {
+                format: "%Y"
+            },
+            y: {
+                min: 0,
+                max: 1,
+                padding: {
+                    top: 0,
+                    bottom: 0
+                }
+            }
+        },
+        legend: {
+            item: {
+                onclick: () => undefined
+            }
+        }
     })
 }
 
 function onEachFeature(feature, layer) {
     layer.on({
-        click: createCountryReport
+        click: (e) => {
+            selectedCountry = feature.properties.country_name;            
+            createCountryReport(selectedCountry, year)
+            expandTray();
+            map.fitBounds(e.target.getBounds())
+        }
     })
 }
