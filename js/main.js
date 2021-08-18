@@ -24,6 +24,7 @@ $(document).ready(() => {
     indicator = $('input[name=flexRadioDefault]:checked')[0].id.replace('Radio','');
     initListeners();
     initMap();
+    $('#d3Map').hide();
     initd3Map();
     resizeLayout();
     $(".tray-close").on("click", () => closeTray())
@@ -72,7 +73,15 @@ function initListeners() {
         createCountryReport(selectedCountry, parseInt(year));
     });
 
-    
+    $('#asCartogram').on('change', e => {
+        if (e.target.checked) {
+            $('#map').hide();
+            $('#d3Map').show();
+        } else {
+            $('#d3Map').hide();
+            $('#map').show();
+        }
+    });
 
 };
 
@@ -443,15 +452,13 @@ async function initd3Map() {
 
     const g = svg.append('g');
     const world = g.append('g')
-        .attr("fill", "#cce5f1")
-        .attr("stroke", "#cce5f1")
         .selectAll('.country')
             .data(geo.features)
             .enter().append("path")
             .attr("class", "country")
             .attr("d", path)
-            .attr("fill", "#cce5f1")
-            .attr("stroke", "#cce5f1")
+            .attr("fill", "#f6f5f6")
+            .attr("stroke", "#f6f5f6")
             .style("display", 'block');
 
 
@@ -491,10 +498,12 @@ function updateD3Symbology() {
     let color;
     d3.selectAll("circle")
         .attr("fill", d => {
-            if (checked === 'c') { // if checked (i.e. show 10 year change)
-                color = colorScales.diverging(d.properties[`${indicator}${year}${checked}`])
-            } else {
-                color = getColor(d.properties[`${indicator}${year}${checked}`], colorScales.purples);
+            if (d.properties) {
+                if (checked === 'c') { // if checked (i.e. show 10 year change)
+                    color = colorScales.diverging(d.properties[`${indicator}${year}${checked}`])
+                } else {
+                    color = getColor(d.properties[`${indicator}${year}${checked}`], colorScales.purples);
+                }
             }
             return color
         });
