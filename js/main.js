@@ -1,8 +1,9 @@
 // -----------------------------------
 // --------- GLOBAL VARIABLES --------
-let year = 2020,
+let year = '2020',
     selectedCountry = null,
     indicator,
+    checked = '',
     map,
     mapJSON,
     mapData,
@@ -11,7 +12,8 @@ let year = 2020,
         oranges: chroma.scale('oranges').colors(8),
         blues: chroma.scale('blues').colors(8),
         greens: chroma.scale('greens').colors(8),
-        purples: chroma.scale('purples').colors(8)
+        purples: chroma.scale('purples').colors(8),
+        diverging: chroma.scale('RdBu').domain([-1, 1])
     },
     barChart,
     timeSeriesChart;
@@ -32,15 +34,38 @@ function initListeners() {
     $("input:radio[name=flexRadioDefault]").on("change", (e) => {
         indicator = e.target.id.replace('Radio','');
         mapData.eachLayer(layer => layer.setStyle(style(layer.feature)));
-        createCountryReport(selectedCountry, year);
+        createCountryReport(selectedCountry, parseInt(year));
     });
 
     $('#timeSlider').on('input', (e) => {
-        let yearVal = $(e.target).val();
-        year = yearVal;
-        $('#timeLabel').text(String(yearVal));
+        year =  $(e.target).val();
+        $('#timeLabel').text(String(year));
         mapData.eachLayer(layer => layer.setStyle(style(layer.feature)));
-        createCountryReport(selectedCountry, year);
+    });
+
+    $('#tenYrToggle').on('change', e => {
+        let timeSlider = $('#timeSlider');
+        let val = Number(timeSlider.val());
+
+        console.log('timeslider', timeSlider);
+        console.log(timeSlider.val());
+        // change checked value and update slider rules
+        if (e.target.checked) {
+            checked = 'c';
+            if (val < 2010) {
+                year = '2010'
+                timeSlider.val(year);
+                $('#timeLabel').text(String(year));
+            }
+            document.getElementById('timeSlider').min = '2010';
+        } else {
+            checked = '';
+            document.getElementById('timeSlider').min = '2000';
+        }
+
+        // update symbology
+        mapData.eachLayer(layer => layer.setStyle(style(layer.feature)));
+        createCountryReport(selectedCountry, parseInt(year));
     });
 };
 
@@ -54,7 +79,6 @@ function expandTray() {
     }
 }
 function closeTray() {
-    console.log("close tray!")
     $(".tray").removeClass("expanded box");
 
     if(($(window).width() >= 544)) {
@@ -91,12 +115,12 @@ function initMap() {
     }).addTo(map);
 
     // --------------------- add data to the map ---------------
-    fetchJSON('./data/vdem_15s.json').then((data) => {
+    fetchJSON('./data/vdem.min.json').then((data) => {
         mapJSON = data;
         mapData = L.geoJSON(mapJSON, {
             style: style,
             onEachFeature: onEachFeature
-        }).addTo(map);;
+        }).addTo(map);
         console.log('mapData added to map');
     });
 }
@@ -108,8 +132,14 @@ async function fetchJSON(url) {
 }
 
 function style(feature) {
+    let color;
+    if (checked === 'c') { // if checked (i.e. show 10 year change)
+        color = colorScales.diverging(feature.properties[`${indicator}${year}${checked}`])
+    } else {
+        color = getColor(feature.properties[`${indicator}${year}${checked}`], colorScales.purples);
+    }
     return {
-        fillColor: getColor(feature.properties[`${indicator}${year}`], colorScales.purples),
+        fillColor: color,
         weight: .75,
         opacity: 1,
         color: '#191919',
@@ -133,9 +163,6 @@ function createCountryReport(country, year) {
     // Retrieve attribute data for selected country
     let selectedCountryAttributes = mapJSON.features
         .filter(feature => feature.properties.country_name == country)[0].properties
-
-    console.log(selectedCountryAttributes)
-    console.log(indicator)
     
     //############//
     // PROCESSING //
@@ -165,7 +192,7 @@ function createCountryReport(country, year) {
     // TIMESERIES CHART
     // Reduce the selected country's data down to just the annual columns for the selected indicator
     let indicatorYearObject = Object.keys(selectedCountryAttributes)
-        .filter(key => key.substring(0, 2) == indicator)
+        .filter(key => key.substring(0, 2)  == indicator & key.substring(key.length - 1) != "c")
         .reduce((obj, key) => {
             obj[key] = selectedCountryAttributes[key];
             return obj;
