@@ -41,6 +41,7 @@ function initListeners() {
         year =  $(e.target).val();
         $('#timeLabel').text(String(year));
         mapData.eachLayer(layer => layer.setStyle(style(layer.feature)));
+        createCountryReport(selectedCountry, parseInt(year));
     });
 
     $('#tenYrToggle').on('change', e => {
@@ -62,10 +63,8 @@ function initListeners() {
             checked = '';
             document.getElementById('timeSlider').min = '2000';
         }
-
         // update symbology
         mapData.eachLayer(layer => layer.setStyle(style(layer.feature)));
-        createCountryReport(selectedCountry, parseInt(year));
     });
 };
 
