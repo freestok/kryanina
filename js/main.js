@@ -30,12 +30,14 @@ function initListeners() {
     $("input:radio[name=flexRadioDefault]").on("change", (e) => {
         indicator = e.target.id.replace('Radio','');
         mapData.eachLayer(layer => layer.setStyle(style(layer.feature)));
+        updateD3Symbology(colorScales.purples);
     });
 
     $('#timeSlider').on('input', (e) => {
         year =  $(e.target).val();
         $('#timeLabel').text(String(year));
         mapData.eachLayer(layer => layer.setStyle(style(layer.feature)));
+        updateD3Symbology(colorScales.purples);
     });
 
     $('#tenYrToggle').on('change', e => {
@@ -60,6 +62,7 @@ function initListeners() {
 
         // update symbology
         mapData.eachLayer(layer => layer.setStyle(style(layer.feature)));
+        updateD3Symbology(colorScales.purples);
     });
 };
 
@@ -271,6 +274,7 @@ async function initd3Map() {
         .selectAll("circle")
             .data(geo.features)
             .enter().append("circle")
+            .classed('dorlingCircle', true)
             .attr("r", d => r(d.properties.population))
             .attr("cx", d => d.x)
             .attr("cy", d => d.y)
@@ -278,7 +282,7 @@ async function initd3Map() {
                 console.log('d', d);
                 return getColor(d.properties[`${indicator}${year}${checked}`], colorScales.purples)
             })
-            .attr("fill-opacity", 0.3)
+            .attr("fill-opacity", 0.7)
             // .attr("stroke", "steelblue")
             .attr('stroke', 'grey')
             .attr('cursor', 'pointer');
@@ -297,3 +301,15 @@ async function initd3Map() {
     }
 }
 
+function updateD3Symbology(colorScale) {
+    let color;
+    d3.selectAll("circle")
+        .attr("fill", d => {
+            if (checked === 'c') { // if checked (i.e. show 10 year change)
+                color = colorScales.diverging(d.properties[`${indicator}${year}${checked}`])
+            } else {
+                color = getColor(d.properties[`${indicator}${year}${checked}`], colorScales.purples);
+            }
+            return color
+        });
+}
