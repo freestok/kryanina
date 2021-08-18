@@ -24,12 +24,42 @@ html, body {
 
 .tray-container {
     width: 100%;
+    height: 100%;
 }
 
 .tray-content {
     background-color:#F9EFE6;
     border: none;
     border-radius: 0;
+    height: 100%;
+}
+
+.report-attributes {
+    grid-area: report-attributes;
+}
+
+#report-attributes-list {
+    font-size: 1rem;
+}
+.report-indicator-time-series {
+    grid-area: report-indicator-time-series;
+}
+.report-indicator-bar {
+    grid-area: report-indicator-bar;
+}
+
+
+.report-container {
+    display: grid;
+    grid-template-columns: auto;
+    grid-template-rows: repeat(3, minmax(90%, 100%));
+    grid-template-areas: "report-attributes" 
+                         "report-indicator-time-series" "report-indicator-bar";
+    overflow-y: auto;
+    row-gap: 8px;
+}
+.report-container > div {
+    background-color:#F9EFE6;
 }
 
 .wrapper {
@@ -52,6 +82,15 @@ html, body {
         grid-template-rows: auto 0px;
         grid-template-areas: "sidebar  map"
                              "sidebar  tray";
+    }
+    #report-attributes-list {
+        font-size: 1.5rem;
+    }
+    .report-container {
+        grid-template-columns: repeat(3, minmax(280px, 1fr));
+        grid-template-rows: minmax(180px, 90%);
+        grid-template-areas: "report-attributes report-indicator-time-series report-indicator-bar";
+        column-gap: 5px;
     }
 }
 
