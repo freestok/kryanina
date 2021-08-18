@@ -344,6 +344,7 @@ function onEachFeature(feature, layer) {
             selectedCountry = feature.properties.country_name;            
             createCountryReport(selectedCountry, year)
             expandTray();
+            map.invalidateSize();
             map.fitBounds(e.target.getBounds())
         }
     })
