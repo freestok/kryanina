@@ -275,6 +275,10 @@ function createBarChart(data) {
                 padding: {
                     top: 0,
                     bottom: 0
+                },
+                label: {
+                    text: "Score",
+                    position: "outer-top"
                 }
             },
         },
@@ -327,6 +331,10 @@ function createTimeSeriesChart(data) {
                 padding: {
                     top: 0,
                     bottom: 0
+                },
+                label: {
+                    text: "Score",
+                    position: "outer-top"
                 }
             }
         },
