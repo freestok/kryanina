@@ -422,8 +422,6 @@ async function initd3Map() {
         return feature;
     });
 
-    console.log('geo features', geo.features);
-
     // scale
     const r = d3.scaleSqrt()
         .domain([0, d3.max(geo.features, d => d.properties.population)])
@@ -451,11 +449,11 @@ async function initd3Map() {
 
     const svg = d3.select('div#d3Map')
         .append("svg")
-        // .attr("width", width)
-        // .attr("height", height)
+        .attr("width", width)
+        .attr("height", height)
         // .attr("overflow", "visible");
-        .attr("preserveAspectRatio", "xMinYMin meet")
-        .attr("viewBox", `0 0 ${width} ${height}`);
+        // .attr("preserveAspectRatio", "xMinYMin meet")
+        // .attr("viewBox", `0 0 ${width} ${height}`);
 
     const g = svg.append('g');
     const world = g.append('g')
