@@ -25,9 +25,14 @@ $(document).ready(() => {
     initListeners();
     initMap();
     resizeLayout();
-    $(".tray-close").on("click", () => closeTray())
-
+    $(".tray-close").on("click", () => {
+        closeTray()
+        setTimeout(() => {
+            map.invalidateSize();
+        }, 100);
+    });
 });
+
 
 function initListeners() {
     // listener on radio buttons
