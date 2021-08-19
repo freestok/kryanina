@@ -403,7 +403,6 @@ async function initd3Map() {
         }
     }
 
-
     // // set legend
     // const legend = legendCircle()
     //     .tickValues([50e6, 200e6, 500e6, 1000e6])
@@ -452,8 +451,8 @@ async function initd3Map() {
         .attr("width", width)
         .attr("height", height)
         // .attr("overflow", "visible");
-        // .attr("preserveAspectRatio", "xMinYMin meet")
-        // .attr("viewBox", `0 0 ${width} ${height}`);
+        .attr("preserveAspectRatio", "xMinYMin meet")
+        .attr("viewBox", `0 0 ${width} ${height}`);
 
     const g = svg.append('g');
     const world = g.append('g')
