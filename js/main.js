@@ -16,7 +16,8 @@ let year = '2020',
         diverging: chroma.scale('RdBu').domain([-1, 1])
     },
     barChart,
-    timeSeriesChart;
+    timeSeriesChart,
+    previousD3Select;
 // -----------------------------------
 // -----------------------------------
 
@@ -472,7 +473,7 @@ async function initd3Map() {
         .append("svg")
         .attr("width", width)
         .attr("height", height)
-        // .attr("overflow", "visible");
+        .attr("overflow", "hidden")
         .attr("preserveAspectRatio", "xMinYMin meet")
         .attr("viewBox", `0 0 ${width} ${height}`);
 
@@ -505,7 +506,10 @@ async function initd3Map() {
             .attr("fill-opacity", 0.7)
             // .attr("stroke", "steelblue")
             .attr('stroke', 'grey')
-            .attr('cursor', 'pointer');
+            .attr('stroke-width', .25)
+            .attr('cursor', 'pointer')
+            .on('click', clicked);
+
 
     // zoom function
     const zoom = d3.zoom()
@@ -516,7 +520,33 @@ async function initd3Map() {
             g.attr("stroke-width", 1 / transform.k);
             g2.attr("transform", transform);
             g2.attr("stroke-width", 1 / transform.k);  
-        }); 
+        });
+
+    function clicked(event) {
+        console.log(previousD3Select);
+        d3.select(previousD3Select)
+            .style('stroke','grey')
+            .attr('stroke-width', .25);
+        
+        if (previousD3Select === this) {
+            closeTray();
+            return;
+        } else {
+            selectedCountry = event.properties.country_name;            
+            createCountryReport(selectedCountry, year)
+            expandTray();
+            
+            // map.invalidateSize();
+            // map.fitBounds(e.target.getBounds())
+            // const [[x0, y0], [x1, y1]] = path.bounds(d);
+            d3.event.stopPropagation();
+            d3.select(this)
+                .transition()
+                .style("stroke", "#00FFFF")
+                .attr("stroke-width", 2);
+            previousD3Select = this;
+        }
+    }
     svg.call(zoom);
 }
 
