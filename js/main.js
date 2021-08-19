@@ -69,8 +69,8 @@ function initListeners() {
         }
         // update symbology
         mapData.eachLayer(layer => layer.setStyle(style(layer.feature)));
-        updateD3Symbology();
         createCountryReport(selectedCountry, parseInt(year));
+        updateD3Symbology();
     });
 
     $('#asCartogram').on('change', e => {
@@ -178,7 +178,13 @@ function getColor(d, colorScale) {
 function createCountryReport(country, year) {
     // Retrieve attribute data for selected country
     let selectedCountryAttributes = mapJSON.features
-        .filter(feature => feature.properties.country_name == country)[0].properties
+        .filter(feature => feature.properties.country_name == country)[0];
+
+    if (selectedCountryAttributes) {
+        selectedCountryAttributes = selectedCountryAttributes.properties;
+    } else {
+        return
+    }
     
     //############//
     // PROCESSING //
@@ -484,14 +490,14 @@ async function initd3Map() {
 
     // zoom function
     const zoom = d3.zoom()
-        .scaleExtent([1, 8])
-        .on("zoom", event => {
-            const { transform } = event;
+        // .scaleExtent([1, 8])
+        .on("zoom", () => {
+            const transform = d3.event.transform;
             g.attr("transform", transform);
             g.attr("stroke-width", 1 / transform.k);
             g2.attr("transform", transform);
-            g2.attr("stroke-width", 1 / transform.k);        
-        });
+            g2.attr("stroke-width", 1 / transform.k);  
+        }); 
     svg.call(zoom);
 }
 
