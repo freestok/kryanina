@@ -27,7 +27,12 @@ $(document).ready(() => {
     $('#d3Map').hide();
     initd3Map();
     resizeLayout();
-    $(".tray-close").on("click", () => closeTray())
+    $(".tray-close").on("click", () => {
+        closeTray()
+        setTimeout(() => {
+            map.invalidateSize();
+        }, 100);
+    });
 });
 
 
@@ -238,12 +243,21 @@ function createCountryReport(country, year) {
     //#################//
     // GENERATE REPORT //
     //#################//
+    // Selected country title
     $(".report-country-name").text(selectedCountry);
+
+    // Selected year indicators scores list 
     $("#report-attributes-list").empty();
+
+    // Selected indicator time series chart
+    $("#time-series-title-indicator").text(`${indicatorTranslationObject[indicator]} Score`)
     $.each(attributeYearData, (key, value) => {
         $("#report-attributes-list").append(`<li><b>${indicatorTranslationObject[key.substring(0,2)]}: </b>${value}</li>`)
     });
     createTimeSeriesChart(indicatorTimeSeriesColumns);
+
+    // Selected year indicators bar chart
+    $("#bar-chart-title-year").text(year)
     createBarChart(attributeYearData);
 }
 
@@ -298,6 +312,10 @@ function createBarChart(data) {
                 padding: {
                     top: 0,
                     bottom: 0
+                },
+                label: {
+                    text: "Score",
+                    position: "outer-top"
                 }
             },
         },
@@ -350,6 +368,10 @@ function createTimeSeriesChart(data) {
                 padding: {
                     top: 0,
                     bottom: 0
+                },
+                label: {
+                    text: "Score",
+                    position: "outer-top"
                 }
             }
         },
