@@ -9,16 +9,63 @@ html, body {
 .sidebar {
     grid-area: sidebar;
     background-color: #F9EFE6;
+    overflow-y: auto;
 }
 
 .map {
     grid-area: map;
 }
 
+.tray {
+    background-color: #F9EFE6;
+    grid-area: tray;
+    overflow-y: auto;
+}
+
+.tray-container {
+    width: 100%;
+    height: 100%;
+}
+
+.tray-content {
+    background-color:#F9EFE6;
+    border: none;
+    border-radius: 0;
+    height: 100%;
+}
+
+.report-attributes {
+    grid-area: report-attributes;
+}
+
+#report-attributes-list {
+    font-size: 1rem;
+}
+.report-indicator-time-series {
+    grid-area: report-indicator-time-series;
+}
+.report-indicator-bar {
+    grid-area: report-indicator-bar;
+}
+
+
+.report-container {
+    display: grid;
+    grid-template-columns: auto;
+    grid-template-rows: repeat(3, minmax(90%, 100%));
+    grid-template-areas: "report-attributes" 
+                         "report-indicator-time-series" "report-indicator-bar";
+    overflow-y: auto;
+    row-gap: 8px;
+}
+.report-container > div {
+    background-color:#F9EFE6;
+}
+
 .wrapper {
     display: grid;
-    grid-template-rows: 25% auto;
-    grid-template-areas: "sidebar" "map";
+    grid-template-rows: 25% auto 0px;
+    grid-template-areas: "sidebar" "map" "tray";
     width: 100vw;
     height: 100vh;
 }
@@ -26,18 +73,79 @@ html, body {
 .box {
     color: #121212;
     padding: 10px;
-    font-size: 20px;
+    font-size: 1.25rem;
 }
 
 @media only screen and (min-width: 544px) {
     .wrapper {
         grid-template-columns: minmax(300px, 25%) auto;
-        grid-template-rows: auto;
-        grid-template-areas: "sidebar  map";
+        grid-template-rows: auto 0px;
+        grid-template-areas: "sidebar  map"
+                             "sidebar  tray";
+    }
+    #report-attributes-list {
+        font-size: 1.5rem;
+    }
+    .report-container {
+        grid-template-columns: repeat(3, minmax(280px, 1fr));
+        grid-template-rows: minmax(180px, 90%);
+        grid-template-areas: "report-attributes report-indicator-time-series report-indicator-bar";
+        column-gap: 5px;
     }
 }
 
 #map {
     height: 100%;
     width: 100%;
+}
+
+.accordion-button {
+    background-color: #f9efe6;
+    font-size: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+}
+
+.accordion-body {
+    background-color: #f9efe6;
+    font-size: 1.25rem;
+}
+
+/* The Modal (background) */
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 1; /* Sit on top */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgb(0,0,0); /* Fallback color */
+  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+/* Modal Content/Box */
+.modal-content {
+  background-color: #F9EFE6;
+  margin: 15% auto; /* 15% from the top and centered */
+  padding: 15px;
+  border: 1px solid #000;
+  width: 80%; /* Could be more or less, depending on screen size */
+}
+
+/* Modal Header */
+.modal-header {
+  padding: 10px 10px;
+  background-color: #F9EFE6;
+  color: black;
+}
+
+/* Modal Body */
+.modal-body {padding: 10px 10px;}
+
+/* Modal Footer */
+.modal-footer {
+  padding: 10px 10px;
+  background-color: #F9EFE6;
+  color: black;
 }
