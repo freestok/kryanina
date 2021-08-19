@@ -74,6 +74,7 @@ html, body {
     color: #121212;
     padding: 10px;
     font-size: 1.25rem;
+    z-index: 1;
 }
 
 @media only screen and (min-width: 544px) {

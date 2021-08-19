@@ -17,6 +17,7 @@ let year = '2020',
     },
     barChart,
     timeSeriesChart,
+    currentExtent,
     previousD3Select;
 // -----------------------------------
 // -----------------------------------
@@ -33,6 +34,7 @@ $(document).ready(() => {
         setTimeout(() => {
             map.invalidateSize();
         }, 100);
+        resetD3Selection(true);
     });
 });
 
@@ -80,12 +82,15 @@ function initListeners() {
     });
 
     $('#asCartogram').on('change', e => {
+        currentExtent = map.getBounds();
         if (e.target.checked) {
             $('#map').hide();
             $('#d3Map').show();
         } else {
             $('#d3Map').hide();
             $('#map').show();
+            map.invalidateSize();
+            map.fitBounds(currentExtent);
         }
     });
 
@@ -473,7 +478,7 @@ async function initd3Map() {
         .append("svg")
         .attr("width", width)
         .attr("height", height)
-        .attr("overflow", "hidden")
+        .attr("overflow", "visible")
         .attr("preserveAspectRatio", "xMinYMin meet")
         .attr("viewBox", `0 0 ${width} ${height}`);
 
@@ -523,11 +528,7 @@ async function initd3Map() {
         });
 
     function clicked(event) {
-        console.log(previousD3Select);
-        d3.select(previousD3Select)
-            .style('stroke','grey')
-            .attr('stroke-width', .25);
-        
+        resetD3Selection();
         if (previousD3Select === this) {
             closeTray();
             return;
@@ -563,4 +564,11 @@ function updateD3Symbology() {
             }
             return color
         });
+}
+
+function resetD3Selection(clear=false) {
+    d3.select(previousD3Select)
+        .style('stroke','grey')
+        .attr('stroke-width', .25);
+    if (clear) previousD3Select = null;
 }
