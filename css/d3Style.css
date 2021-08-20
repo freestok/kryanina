@@ -1,5 +1,5 @@
 .svg-container {
-    display: flex;
+    position: absolute;
     align-items: center;
     background-color: #d0cfd4;
     height: 100%;
