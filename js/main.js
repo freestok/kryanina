@@ -119,7 +119,7 @@ function expandTray() {
     if(($(window).width() >= 544)) {
         $(".wrapper").css("grid-template-rows", "auto minmax(200px, 50%)");
     } else {
-        $(".wrapper").css("grid-template-rows", "25% auto 25%");
+        $(".wrapper").css("grid-template-rows", "25% auto 40%");
     }
 }
 function closeTray() {
@@ -138,7 +138,7 @@ function resizeLayout() {
             if(($(window).width() >= 544)) {
                 $(".wrapper").css("grid-template-rows", "auto minmax(200px, 50%)")
             } else {
-                $(".wrapper").css("grid-template-rows", "25% auto 25%")
+                $(".wrapper").css("grid-template-rows", "25% auto 40%")
             }
         } else {
             if(($(window).width() >= 544)) {
@@ -288,16 +288,16 @@ function createBarChart(data) {
     barChart = c3.generate({
         bindto: "#report-indicator-bar-chart",
         size: {
-            height: $(".report-indicator-bar").height(),
-            width: $(".report-indicator-bar").width()
+            height: $("#report-indicator-bar-chart").height(),
+            width: $("#report-indicator-bar-chart").width()
         },
         oninit: () => {
             setTimeout(() => {
-                resizeChart(barChart, ".report-indicator-bar")
+                resizeChart(barChart, ".report-indicator-bar", ".report-indicator-bar h2")
             }, 1)
         },
         onresized: () => {
-            resizeChart(barChart, ".report-indicator-bar")
+            resizeChart(barChart, ".report-indicator-bar", ".report-indicator-bar h2")
         },
         data: {
             columns: [
@@ -350,9 +350,9 @@ function createBarChart(data) {
         }
     });
 }
-function resizeChart(chart, el) {
+function resizeChart(chart, el, titleEl) {
     chart.resize({
-        height: $(el).height(),
+        height: $(el).height() - $(titleEl).height(),
         width: $(el).width()
     })
 }
@@ -366,11 +366,11 @@ function createTimeSeriesChart(data) {
         },
         oninit: () => {
             setTimeout(() => {
-                resizeChart(timeSeriesChart, ".report-indicator-time-series")
+                resizeChart(timeSeriesChart, ".report-indicator-time-series", ".report-indicator-time-series h2")
             }, 1)
         },
         onresized: () => {
-            resizeChart(timeSeriesChart, ".report-indicator-time-series")
+            resizeChart(timeSeriesChart, ".report-indicator-time-series", ".report-indicator-time-series h2")
         },
         transition: {
             duration: 0
