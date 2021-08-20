@@ -4,6 +4,7 @@ html, body {
     height: 100%;
     width: 100%;
     font-family: "Staatliches", sans-serif;
+    overflow-x: hidden;
 }
 
 .sidebar {
@@ -52,12 +53,13 @@ html, body {
 
 .report-container {
     display: grid;
-    grid-template-columns: auto;
-    grid-template-rows: repeat(3, minmax(90%, 100%));
+    grid-template-columns: 100%;
+    grid-template-rows: min-content repeat(2, minmax(250px, max-content));
     grid-template-areas: "report-attributes" 
                          "report-indicator-time-series" "report-indicator-bar";
     overflow-y: auto;
     row-gap: 8px;
+    padding: 0;
 }
 .report-container > div {
     background-color:#F9EFE6;
@@ -79,7 +81,7 @@ html, body {
     z-index: 1;
 }
 
-@media only screen and (min-width: 544px) {
+@media only screen and (min-width: 576px) {
     .wrapper {
         grid-template-columns: minmax(300px, 25%) auto;
         grid-template-rows: auto 0px;
