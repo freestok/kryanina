@@ -26,7 +26,6 @@ $(document).ready(() => {
     indicator = $('input[name=flexRadioDefault]:checked')[0].id.replace('Radio','');
     initListeners();
     initMap();
-    $('#d3Map').hide();
     initd3Map();
     resizeLayout();
     $(".tray-close").on("click", () => {
@@ -103,9 +102,12 @@ function initListeners() {
             $("#mapContainer")
                 .show()
                 .addClass("map");
-
-            map.invalidateSize();
+ 
+            setTimeout(() => {
+                map.invalidateSize();
+            }, 100);
             map.fitBounds(currentExtent);
+
         }
     });
 
@@ -484,18 +486,18 @@ async function initd3Map() {
         .force("collide", d3.forceCollide(d => 1 + r(d.properties.population)))
         .stop();
 
-    // now create the SVG
     for (let i = 0; i < 200; i++) {
         simulation.tick();
     }
 
+    // --------------- now create the SVG ---------------
     const svg = d3.select('div#d3Map')
         .append("svg")
         .attr("width", width)
         .attr("height", height)
-        .attr("overflow", "visible")
-        .attr("preserveAspectRatio", "xMinYMin meet")
-        .attr("viewBox", `0 0 ${width} ${height}`);
+        .attr("overflow", "visible");
+        // .attr("preserveAspectRatio", "xMinYMin meet")
+        // .attr("viewBox", `0 0 ${width} ${height}`);
 
     const g = svg.append('g');
     const world = g.append('g')
