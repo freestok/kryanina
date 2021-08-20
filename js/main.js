@@ -495,9 +495,9 @@ async function initd3Map() {
         .append("svg")
         .attr("width", width)
         .attr("height", height)
-        .attr("overflow", "visible");
-        // .attr("preserveAspectRatio", "xMinYMin meet")
-        // .attr("viewBox", `0 0 ${width} ${height}`);
+        .attr("overflow", "visible")
+        .attr("preserveAspectRatio", "xMinYMin meet")
+        .attr("viewBox", `0 0 ${width} ${height}`);
 
     const g = svg.append('g');
     const world = g.append('g')
@@ -547,7 +547,9 @@ async function initd3Map() {
     function clicked(event) {
         resetD3Selection();
         if (previousD3Select === this) {
+            console.log('close tray');
             closeTray();
+            previousD3Select = null;
             return;
         } else {
             selectedCountry = event.properties.country_name;            
