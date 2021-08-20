@@ -16,7 +16,9 @@ let year = '2020',
         diverging: chroma.scale('RdBu').domain([-1, 1])
     },
     barChart,
-    timeSeriesChart;
+    timeSeriesChart,
+    currentExtent,
+    previousD3Select;
 // -----------------------------------
 // -----------------------------------
 
@@ -24,12 +26,14 @@ $(document).ready(() => {
     indicator = $('input[name=flexRadioDefault]:checked')[0].id.replace('Radio','');
     initListeners();
     initMap();
+    initd3Map();
     resizeLayout();
     $(".tray-close").on("click", () => {
         closeTray()
         setTimeout(() => {
             map.invalidateSize();
         }, 100);
+        resetD3Selection(true);
     });
 });
 
@@ -39,6 +43,7 @@ function initListeners() {
     $("input:radio[name=flexRadioDefault]").on("change", (e) => {
         indicator = e.target.id.replace('Radio','');
         mapData.eachLayer(layer => layer.setStyle(style(layer.feature)));
+        updateD3Symbology();
         createCountryReport(selectedCountry, parseInt(year));
     });
 
@@ -46,6 +51,7 @@ function initListeners() {
         year =  $(e.target).val();
         $('#timeLabel').text(String(year));
         mapData.eachLayer(layer => layer.setStyle(style(layer.feature)));
+        updateD3Symbology();
         createCountryReport(selectedCountry, parseInt(year));
     });
 
@@ -70,7 +76,41 @@ function initListeners() {
         }
         // update symbology
         mapData.eachLayer(layer => layer.setStyle(style(layer.feature)));
+        createCountryReport(selectedCountry, parseInt(year));
+        updateD3Symbology();
     });
+
+    $('#asCartogram').on('change', e => {
+        currentExtent = map.getBounds();
+        if (e.target.checked) {
+            // Hide the Leaflet map and swap .map class with D3 map
+            $('#map').hide();
+            $("#mapContainer")
+                .hide()
+                .removeClass("map")
+            $('#d3Map').show();
+            $('#d3MapContainer')
+                .show()
+                .addClass("map")
+        } else {
+            // Hide the D3 map and swap .map class with Leaflet map
+            $('#d3Map').hide();
+            $("#d3MapContainer")
+                .hide()
+                .removeClass("map");
+            $('#map').show();
+            $("#mapContainer")
+                .show()
+                .addClass("map");
+ 
+            setTimeout(() => {
+                map.invalidateSize();
+            }, 100);
+            map.fitBounds(currentExtent);
+
+        }
+    });
+
 };
 
 function expandTray() {
@@ -166,7 +206,13 @@ function getColor(d, colorScale) {
 function createCountryReport(country, year) {
     // Retrieve attribute data for selected country
     let selectedCountryAttributes = mapJSON.features
-        .filter(feature => feature.properties.country_name == country)[0].properties
+        .filter(feature => feature.properties.country_name == country)[0];
+
+    if (selectedCountryAttributes) {
+        selectedCountryAttributes = selectedCountryAttributes.properties;
+    } else {
+        return
+    }
     
     //############//
     // PROCESSING //
@@ -370,4 +416,176 @@ function onEachFeature(feature, layer) {
             map.fitBounds(e.target.getBounds())
         }
     })
+}
+
+
+// -----------------------------------------------------------------------------
+// ------------------------------- d3 stuff ------------------------------------
+// -----------------------------------------------------------------------------
+async function initd3Map() {
+    // https://observablehq.com/@harrystevens/dorling-cartogram
+
+    const width = 960;
+    const height = width * .49;
+
+    // Find the centroid of the largest polygon
+    const centroid = (feature) => {
+        const geometry = feature.geometry;
+        if (geometry.type === "Polygon") {
+            return d3.geoCentroid(feature);
+        }
+        else {
+            let largestPolygon = {}, largestArea = 0;
+            geometry.coordinates.forEach(coordinates => {
+                const polygon = { type: "Polygon", coordinates },
+                    area = d3.geoArea(polygon);
+                if (area > largestArea) {
+                    largestPolygon = polygon;
+                    largestArea = area;
+                }
+            });
+            return d3.geoCentroid(largestPolygon);
+        }
+    }
+
+    // // set legend
+    // const legend = legendCircle()
+    //     .tickValues([50e6, 200e6, 500e6, 1000e6])
+    //     .tickFormat((d, i, e) => {
+    //         const val = d >= 1e9 ? `${d / 1e9}B` : `${d / 1e6}M`;
+    //         const unit = i === e.length - 1 ? " people" : "";
+    //         return `${val}${unit}`;
+    //     })
+    //     .scale(r);
+
+    // get geometry data and calculate centroid
+    const topo = await d3.json('./data/vdem.topo.json');
+    const geo = topojson.feature(topo, topo.objects.countries_pop);
+    geo.features.forEach(feature => {
+        feature.centroid = centroid(feature);
+        return feature;
+    });
+
+    // scale
+    const r = d3.scaleSqrt()
+        .domain([0, d3.max(geo.features, d => d.properties.population)])
+        .range([0, Math.sqrt(width * height) / 10])
+
+    // set projection and path
+    const projection = d3.geoEqualEarth()
+        .rotate([-10, 0, 0])
+        .fitSize([width, height], { type: "Sphere" });
+
+    const path = d3.geoPath(projection);
+
+
+    // stop collisions
+    const simulation = d3.forceSimulation(geo.features)
+        .force("x", d3.forceX(d => projection(d.centroid)[0]))
+        .force("y", d3.forceY(d => projection(d.centroid)[1]))
+        .force("collide", d3.forceCollide(d => 1 + r(d.properties.population)))
+        .stop();
+
+    for (let i = 0; i < 200; i++) {
+        simulation.tick();
+    }
+
+    // --------------- now create the SVG ---------------
+    const svg = d3.select('div#d3Map')
+        .append("svg")
+        .attr("width", width)
+        .attr("height", height)
+        .attr("overflow", "visible");
+        // .attr("preserveAspectRatio", "xMinYMin meet")
+        // .attr("viewBox", `0 0 ${width} ${height}`);
+
+    const g = svg.append('g');
+    const world = g.append('g')
+        .selectAll('.country')
+            .data(geo.features)
+            .enter().append("path")
+            .attr("class", "country")
+            .attr("d", path)
+            .attr("fill", "#f6f5f6")
+            .attr("stroke", "#f6f5f6")
+            .style("display", 'block');
+
+
+    const g2 = svg.append('g');
+    // don't show western sahara or greenland population, no dem data for them
+    let exclude = ['W. Sahara','Greenland']
+    geo.features = geo.features.filter(e => !exclude.includes(e.properties.country_name))
+
+    g2.append('g')
+        .selectAll("circle")
+            .data(geo.features)
+            .enter().append("circle")
+            .classed('dorlingCircle', true)
+            .attr("r", d => r(d.properties.population))
+            .attr("cx", d => d.x)
+            .attr("cy", d => d.y)
+            .attr("fill", d => getColor(d.properties[`${indicator}${year}${checked}`], colorScales.purples))
+            .attr("fill-opacity", 0.7)
+            // .attr("stroke", "steelblue")
+            .attr('stroke', 'grey')
+            .attr('stroke-width', .25)
+            .attr('cursor', 'pointer')
+            .on('click', clicked);
+
+
+    // zoom function
+    const zoom = d3.zoom()
+        // .scaleExtent([1, 8])
+        .on("zoom", () => {
+            const transform = d3.event.transform;
+            g.attr("transform", transform);
+            g.attr("stroke-width", 1 / transform.k);
+            g2.attr("transform", transform);
+            g2.attr("stroke-width", 1 / transform.k);  
+        });
+
+    function clicked(event) {
+        resetD3Selection();
+        if (previousD3Select === this) {
+            closeTray();
+            return;
+        } else {
+            selectedCountry = event.properties.country_name;            
+            createCountryReport(selectedCountry, year)
+            expandTray();
+            
+            // map.invalidateSize();
+            // map.fitBounds(e.target.getBounds())
+            // const [[x0, y0], [x1, y1]] = path.bounds(d);
+            d3.event.stopPropagation();
+            d3.select(this)
+                .transition()
+                .style("stroke", "#00FFFF")
+                .attr("stroke-width", 2);
+            previousD3Select = this;
+        }
+    }
+    svg.call(zoom);
+}
+
+function updateD3Symbology() {
+    let color;
+    d3.selectAll("circle")
+        .attr("fill", d => {
+            if (d.properties) {
+                if (checked === 'c') { // if checked (i.e. show 10 year change)
+                    color = colorScales.diverging(d.properties[`${indicator}${year}${checked}`])
+                } else {
+                    color = getColor(d.properties[`${indicator}${year}${checked}`], colorScales.purples);
+                }
+            }
+            return color
+        });
+}
+
+function resetD3Selection(clear=false) {
+    d3.select(previousD3Select)
+        .style('stroke','grey')
+        .attr('stroke-width', .25);
+    if (clear) previousD3Select = null;
 }

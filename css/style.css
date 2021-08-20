@@ -64,6 +64,7 @@ html, body {
 
 .wrapper {
     display: grid;
+    grid-template-columns: 100%;
     grid-template-rows: 25% auto 0px;
     grid-template-areas: "sidebar" "map" "tray";
     width: 100vw;
@@ -74,6 +75,7 @@ html, body {
     color: #121212;
     padding: 10px;
     font-size: 1.25rem;
+    z-index: 1;
 }
 
 @media only screen and (min-width: 544px) {
@@ -97,6 +99,9 @@ html, body {
 #map {
     height: 100%;
     width: 100%;
+}
+#d3MapContainer {
+    display: none;
 }
 
 .accordion-button {
