@@ -84,11 +84,26 @@ function initListeners() {
     $('#asCartogram').on('change', e => {
         currentExtent = map.getBounds();
         if (e.target.checked) {
+            // Hide the Leaflet map and swap .map class with D3 map
             $('#map').hide();
+            $("#mapContainer")
+                .hide()
+                .removeClass("map")
             $('#d3Map').show();
+            $('#d3MapContainer')
+                .show()
+                .addClass("map")
         } else {
+            // Hide the D3 map and swap .map class with Leaflet map
             $('#d3Map').hide();
+            $("#d3MapContainer")
+                .hide()
+                .removeClass("map");
             $('#map').show();
+            $("#mapContainer")
+                .show()
+                .addClass("map");
+
             map.invalidateSize();
             map.fitBounds(currentExtent);
         }
