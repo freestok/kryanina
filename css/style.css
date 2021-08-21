@@ -134,7 +134,7 @@ html, body {
 }
 
 #aut {
-    background-color:#ca0020;
+    background-color:#8d455a;
     padding: .25em;
     color: white;
 }
@@ -152,7 +152,7 @@ html, body {
 }
 
 #dem {
-    background-color:#0571b0;
+    background-color:#486689;
     padding: .25em;
     color: white;
 }
@@ -167,4 +167,8 @@ html, body {
     display: block;
     margin-left: auto;
     margin-right: auto;
+}
+
+#modalContent {
+    background-color:#F9EFE6
 }

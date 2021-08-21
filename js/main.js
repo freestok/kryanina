@@ -27,6 +27,7 @@ let year = '2020',
 // -----------------------------------
 
 $(document).ready(() => {
+    $('#metadata-modal').modal('show');
     indicator = $('input[name=flexRadioDefault]:checked')[0].id.replace('Radio','');
     initListeners();
     initMap();
