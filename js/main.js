@@ -7,6 +7,7 @@ let year = '2020',
     map,
     mapJSON,
     mapData,
+    selectedFeature,
     colorScales = {
         reds: chroma.scale('reds').colors(8),
         oranges: chroma.scale('oranges').colors(8),
@@ -84,6 +85,8 @@ function initListeners() {
     $('#asCartogram').on('change', e => {
         currentExtent = map.getBounds();
         if (e.target.checked) {
+            resetMapHighlight();
+            closeTray();
             // Hide the Leaflet map and swap .map class with D3 map
             $('#map').hide();
             $("#mapContainer")
@@ -94,6 +97,7 @@ function initListeners() {
                 .show()
                 .addClass("map")
         } else {
+            closeTray();
             // Hide the D3 map and swap .map class with Leaflet map
             $('#d3Map').hide();
             $("#d3MapContainer")
@@ -120,7 +124,7 @@ function expandTray() {
     if(($(window).width() >= 544)) {
         $(".wrapper").css("grid-template-rows", "auto minmax(200px, 50%)");
     } else {
-        $(".wrapper").css("grid-template-rows", "25% auto 25%");
+        $(".wrapper").css("grid-template-rows", "25% auto 40%");
     }
 }
 function closeTray() {
@@ -139,7 +143,7 @@ function resizeLayout() {
             if(($(window).width() >= 544)) {
                 $(".wrapper").css("grid-template-rows", "auto minmax(200px, 50%)")
             } else {
-                $(".wrapper").css("grid-template-rows", "25% auto 25%")
+                $(".wrapper").css("grid-template-rows", "25% auto 40%")
             }
         } else {
             if(($(window).width() >= 544)) {
@@ -294,16 +298,16 @@ function createBarChart(data) {
     barChart = c3.generate({
         bindto: "#report-indicator-bar-chart",
         size: {
-            height: $(".report-indicator-bar").height(),
-            width: $(".report-indicator-bar").width()
+            height: $("#report-indicator-bar-chart").height(),
+            width: $("#report-indicator-bar-chart").width()
         },
         oninit: () => {
             setTimeout(() => {
-                resizeChart(barChart, ".report-indicator-bar")
+                resizeChart(barChart, ".report-indicator-bar", ".report-indicator-bar h2")
             }, 1)
         },
         onresized: () => {
-            resizeChart(barChart, ".report-indicator-bar")
+            resizeChart(barChart, ".report-indicator-bar", ".report-indicator-bar h2")
         },
         data: {
             columns: [
@@ -356,9 +360,9 @@ function createBarChart(data) {
         }
     });
 }
-function resizeChart(chart, el) {
+function resizeChart(chart, el, titleEl) {
     chart.resize({
-        height: $(el).height(),
+        height: $(el).height() - $(titleEl).height(),
         width: $(el).width()
     })
 }
@@ -380,11 +384,11 @@ function createTimeSeriesChart(data) {
         },
         oninit: () => {
             setTimeout(() => {
-                resizeChart(timeSeriesChart, ".report-indicator-time-series")
+                resizeChart(timeSeriesChart, ".report-indicator-time-series", ".report-indicator-time-series h2")
             }, 1)
         },
         onresized: () => {
-            resizeChart(timeSeriesChart, ".report-indicator-time-series")
+            resizeChart(timeSeriesChart, ".report-indicator-time-series", ".report-indicator-time-series h2")
         },
         transition: {
             duration: 0
@@ -420,9 +424,30 @@ function createTimeSeriesChart(data) {
     })
 }
 
+function highlightFeature(e) {
+    
+    resetMapHighlight();
+    selectedFeature = e.target;
+    selectedFeature.setStyle({
+        weight: 2,
+        color: "#00FFFF"
+    });
+
+    if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+        selectedFeature.bringToFront();
+    }
+}
+
+function resetMapHighlight() {
+    if (selectedFeature) {
+        mapData.resetStyle(selectedFeature);
+    }
+}
+
 function onEachFeature(feature, layer) {
     layer.on({
         click: (e) => {
+            highlightFeature(e);
             selectedCountry = feature.properties.country_name;            
             createCountryReport(selectedCountry, year)
             expandTray();
