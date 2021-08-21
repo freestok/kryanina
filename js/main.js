@@ -37,6 +37,7 @@ $(document).ready(() => {
             map.invalidateSize();
         }, 100);
         resetD3Selection(true);
+        resetMapHighlight();
     });
 });
 
@@ -473,6 +474,7 @@ function resetMapHighlight() {
     if (selectedFeature) {
         mapData.resetStyle(selectedFeature);
         selectedFeature = null;
+        selectedCountry = null;
     }
 }
 
@@ -481,12 +483,14 @@ function onEachFeature(feature, layer) {
         layer.on({
             click: (e) => {
                 // if it's a double-click, deselect
+                console.log('selectedCountry', selectedCountry);
                 if (selectedCountry === feature.properties.country_name) {
                     resetMapHighlight();
                     closeTray();
                     setTimeout(() => {
                         map.invalidateSize();
                     }, 100);
+                    console.log('bye bye');
                     return;
                 }
 
