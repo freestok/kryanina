@@ -12,8 +12,9 @@ let year = '2020',
         oranges: chroma.scale('oranges').colors(8),
         blues: chroma.scale('blues').colors(8),
         greens: chroma.scale('greens').colors(8),
-        purples: chroma.scale('purples').colors(8),
-        diverging: chroma.scale('RdBu').domain([-1, 1])
+        purples: chroma.scale('purples').colors(5),
+        diverging: chroma.scale('RdBu').domain([-1, 1]),
+        ordinal: chroma.scale('RdBu').domain([0, 1, 2, 3])
     },
     barChart,
     timeSeriesChart,
@@ -176,11 +177,14 @@ async function fetchJSON(url) {
 }
 
 function style(feature) {
+    const property = feature.properties[`${indicator}${year}${checked}`]
     let color;
     if (checked === 'c') { // if checked (i.e. show 10 year change)
-        color = colorScales.diverging(feature.properties[`${indicator}${year}${checked}`])
+        color = colorScales.diverging(property)
+    } else if (indicator.includes('rg')) {
+        color = colorScales.ordinal(property)
     } else {
-        color = getColor(feature.properties[`${indicator}${year}${checked}`], colorScales.purples);
+        color = getColor(property, colorScales.purples);
     }
     return {
         fillColor: color,
@@ -192,14 +196,12 @@ function style(feature) {
 }
 
 function getColor(d, colorScale) {
-    return d > .9 ? colorScale[7] :
-           d > .8 ? colorScale[6] :
-           d > .7 ? colorScale[5] :
-           d > .6 ? colorScale[4] :
-           d > .5 ? colorScale[3] :
+    return d > .8 ? colorScale[4] :
+           d > .6 ? colorScale[3] :
            d > .4 ? colorScale[2] :
-           d > .3 ? colorScale[1] :
-                    colorScale[0];
+           d > .2 ? colorScale[1] :
+           d > 0  ? colorScale[0] :
+           'grey';
 }
 
 
@@ -224,12 +226,13 @@ function createCountryReport(country, year) {
         li: "Liberal",
         pa: "Participatory",
         de: "Deliberative",
-        eg: "Egalitarian"
+        eg: "Egalitarian",
+        rg: "Regime Type"
     }
 
     // BAR CHART
     // Generate array of fields for the selected year
-    let attributeYearKeys = ["el", "li", "pa", "de", "eg"].map(attr => `${attr}${year}`)
+    let attributeYearKeys = ["el", "li", "pa", "de", "eg", "rg"].map(attr => `${attr}${year}`)
 
     // Filter the attribute data to only the fields for the selected year
     let attributeYearData = Object.keys(selectedCountryAttributes)
@@ -275,8 +278,11 @@ function createCountryReport(country, year) {
     // Selected indicator time series chart
     $("#time-series-title-indicator").text(`${indicatorTranslationObject[indicator]} Score`)
     $.each(attributeYearData, (key, value) => {
-        $("#report-attributes-list").append(`<li><b>${indicatorTranslationObject[key.substring(0,2)]}: </b>${value}</li>`)
+        if (!key.includes('rg')) { // skip regime type
+            $("#report-attributes-list").append(`<li><b>${indicatorTranslationObject[key.substring(0,2)]}: </b>${value}</li>`)
+        } 
     });
+
     createTimeSeriesChart(indicatorTimeSeriesColumns);
 
     // Selected year indicators bar chart
@@ -333,7 +339,7 @@ function createBarChart(data) {
                 min: 0,
                 max: 1,
                 padding: {
-                    top: 0,
+                    top: 5,
                     bottom: 0
                 },
                 label: {
@@ -358,6 +364,14 @@ function resizeChart(chart, el) {
 }
 
 function createTimeSeriesChart(data) {
+    let ymin, ymax;
+    if (indicator.includes('rg')) {
+        ymin = 0;
+        ymax = 3;
+    } else {
+        ymin = 0;
+        ymax = 1;
+    }
     timeSeriesChart = c3.generate({
         bindto: "#report-indicator-time-series-chart",
         size: {
@@ -386,8 +400,8 @@ function createTimeSeriesChart(data) {
                 format: "%Y"
             },
             y: {
-                min: 0,
-                max: 1,
+                min: ymin,
+                max: ymax,
                 padding: {
                     top: 0,
                     bottom: 0
@@ -525,7 +539,7 @@ async function initd3Map() {
             .attr("cx", d => d.x)
             .attr("cy", d => d.y)
             .attr("fill", d => getColor(d.properties[`${indicator}${year}${checked}`], colorScales.purples))
-            .attr("fill-opacity", 0.7)
+            .attr("fill-opacity", 0.85)
             // .attr("stroke", "steelblue")
             .attr('stroke', 'grey')
             .attr('stroke-width', .25)
@@ -575,10 +589,13 @@ function updateD3Symbology() {
     d3.selectAll("circle")
         .attr("fill", d => {
             if (d.properties) {
+                const property = d.properties[`${indicator}${year}${checked}`]
                 if (checked === 'c') { // if checked (i.e. show 10 year change)
-                    color = colorScales.diverging(d.properties[`${indicator}${year}${checked}`])
+                    color = colorScales.diverging(property)
+                }  else if (indicator.includes('rg')) {
+                    color = colorScales.ordinal(property)
                 } else {
-                    color = getColor(d.properties[`${indicator}${year}${checked}`], colorScales.purples);
+                    color = getColor(property, colorScales.purples);
                 }
             }
             return color
