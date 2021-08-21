@@ -36,37 +36,42 @@
     <div class="wrapper">
         <div class="box sidebar">
             <div class="container">
-            
                 <div class="row" id="demOverlayRow">
-                    <h2>Democracy Index</h2>
+                    <h2>Symbolize By...</h2>
                     <div class="form-check">
                         <input class="form-check-input" type="radio" name="flexRadioDefault" id="elRadio">
                         <label class="form-check-label" for="elRadio">
-                            Electoral
+                            Electoral Index
                         </label>
                     </div>
                     <div class="form-check">
                         <input class="form-check-input" type="radio" name="flexRadioDefault" id="liRadio" checked>
                         <label class="form-check-label" for="liRadio">
-                            Liberal
+                            Liberal Index
                         </label>
                     </div>
                     <div class="form-check">
                         <input class="form-check-input" type="radio" name="flexRadioDefault" id="paRadio">
                         <label class="form-check-label" for="paRadio">
-                            Participatory
+                            Participatory Index
                         </label>
                     </div>
                     <div class="form-check">
                         <input class="form-check-input" type="radio" name="flexRadioDefault" id="deRadio">
                         <label class="form-check-label" for="deRadio">
-                            Deliberative
+                            Deliberative Index
                         </label>
                     </div>
                     <div class="form-check">
                         <input class="form-check-input" type="radio" name="flexRadioDefault" id="egRadio">
                         <label class="form-check-label" for="egRadio">
-                            Egalitatrian
+                            Egalitatrian Index
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="flexRadioDefault" id="rgRadio">
+                        <label class="form-check-label" for="rgRadio">
+                            Regime Type
                         </label>
                     </div>
                 </div>
@@ -92,7 +97,7 @@
                                     </div>
                                     <div class="form-check form-switch">
                                         <input class="form-check-input" type="checkbox" id="asCartogram">
-                                        <label class="form-check-label" for="asCartogram">View As Cartogram</label>
+                                        <label class="form-check-label" for="asCartogram">View by Population</label>
                                     </div>
                                 </div>
                             </div>
@@ -119,7 +124,7 @@
             <div class="tray-container">
                 <div class="modal-content tray-content">
                     <div class="modal-header">
-                        <h5 class="modal-title report-country-name">Title</h5>
+                        <h5 class="modal-title report-country-name">Title</h5><span id="regimeLabel"></span>
                         <button type="button" class="btn-close close tray-close" data-dismiss="modal" aria-label="Close">
                             <span aria-hidden="true"></span>
                           </button>
@@ -148,10 +153,33 @@
                         <h5 class="modal-title" id="exampleModalLabel">V-DEM: Varieties of Democracy</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-                    <div class="modal-body">
-                        <p>Varieties of Democracy (V-Dem) is a new approach to conceptualizing and measuring democracy. We provide a multidimensional and disaggregated dataset that reflects the complexity of the concept of democracy as a system of rule that goes beyond the simple presence of elections. The V-Dem project distinguishes between five high-level principles of democracy: electoral, liberal, participatory, deliberative, and egalitarian, and collects data to measure these principles.</p>
-                        <p>V-Dem is one of the largest-ever social science data collection efforts with a database containing over 28.4 million data points. The latest version of the dataset, v11, covers 202 countries from 1789-2020 with annual updates to follow.</p>
-                        
+                    <div id="metadataBody" class="modal-body">
+                        <p>The <b>Varieties of Democracy</b> (V-Dem) is an attempt to measure 
+                            and conceptualize democracy throughout the world. With a global team of over 50 
+                            social scientists, they put forth five high-level indicators of democracy (scale 0-1, low-high):</p>
+                        <ul>
+                            <li><b>Electoral:</b> Are rulers responsive to citizens? Is there electoral competition?</li>
+                            <li><b>Liberal:</b> Are individual & minority rights protected? Are limits placed on the government?</li>
+                            <li><b>Participatory:</b> To what extent do citizens participate in political processes?</li>
+                            <li><b>Deliberative:</b> Are political descisions motivated by the public good?</li>
+                            <li><b>Egalitatrian:</b> Do inequities hurt the ability of citizens from participating in government?</li>
+                        </ul>
+                        <figure>
+                            <img class="legendImg" src="./img/legend.png"
+                                 alt="Legend of data">
+                        </figure>
+
+                        With these high-level indicators, they can group countries into four regime types:
+                        <ul id="regimeList">
+                            <li><b><span id="aut">Closed Autocracy (0)</span></b> No multiparty elections for legislative or executive branches of government.</li>
+                            <li><b><span id="elAut">Electoral Autocracy (1)</span></b> De-jure elections are held, but they fail to be free and fair.</li>
+                            <li><b><span id="elDem">Electoral Democracy (2)</span></b> De-facto free and fair elections are held, but state suffers from a low liberal indicator score.</li>
+                            <li><b><span id="dem">Liberal Democracy (3)</span></b> De-facto free and fair elections and satisfactory levels of high-level indicators are met.</li>
+                        </ul>
+
+                        <!-- <p>Varieties of Democracy (V-Dem) is a new approach to conceptualizing and measuring democracy. We provide a multidimensional and disaggregated dataset that reflects the complexity of the concept of democracy as a system of rule that goes beyond the simple presence of elections. The V-Dem project distinguishes between five high-level principles of democracy: electoral, liberal, participatory, deliberative, and egalitarian, and collects data to measure these principles.</p>
+                        <p>V-Dem is one of the largest-ever social science data collection efforts with a database containing over 28.4 million data points. The latest version of the dataset, v11, covers 202 countries from 1789-2020 with annual updates to follow.</p> -->
+                        <p><a href="https://github.com/freestok/kryanina", target="_blank">Created by Kray Freestone, Ryan Cooper, and Kristina Randrup</a></p>
                     </div>
                     <div class="modal-footer">
                         <h3><a href="https://www.v-dem.net/en/data/data/v-dem-dataset-v111/" target="_blank">V-Dem datasets</a></h3>
@@ -160,13 +188,6 @@
             </div>
         </div>
     </div>
-
-
-
-                
-
-
-
 
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA==" crossorigin=""></script>
     <script src="./js/main.js" type="module"></script>

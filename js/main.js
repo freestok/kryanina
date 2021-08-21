@@ -13,13 +13,16 @@ let year = '2020',
         oranges: chroma.scale('oranges').colors(8),
         blues: chroma.scale('blues').colors(8),
         greens: chroma.scale('greens').colors(8),
-        purples: chroma.scale('purples').colors(8),
-        diverging: chroma.scale('RdBu').domain([-1, 1])
+        purples: chroma.scale('purples').colors(5),
+        diverging: chroma.scale('RdBu').domain([-1, 1]),
+        ordinal: chroma.scale('RdBu').domain([0, 1, 2, 3]),
+        qualitative: ['#0072B2', '#009E73', '#D55E00', '#56B4E9', '#CC79A7']
     },
     barChart,
     timeSeriesChart,
     currentExtent,
-    previousD3Select;
+    previousD3Select,
+    exclude = ['Greenland', 'W. Sahara', 'Belize'];
 // -----------------------------------
 // -----------------------------------
 
@@ -35,6 +38,7 @@ $(document).ready(() => {
             map.invalidateSize();
         }, 100);
         resetD3Selection(true);
+        resetMapHighlight();
     });
 });
 
@@ -43,7 +47,16 @@ function initListeners() {
     // listener on radio buttons
     $("input:radio[name=flexRadioDefault]").on("change", (e) => {
         indicator = e.target.id.replace('Radio','');
-        mapData.eachLayer(layer => layer.setStyle(style(layer.feature)));
+        
+        if (indicator === 'rg') {
+            $('#tenYrToggle').prop('disabled', true);
+            $('#tenYrToggle').prop('checked', false);
+            checked = '';
+        } else {
+            $('#tenYrToggle').prop('disabled', false);
+        }
+
+        mapData.eachLayer(setLeafletStyle);
         updateD3Symbology();
         createCountryReport(selectedCountry, parseInt(year));
     });
@@ -51,7 +64,7 @@ function initListeners() {
     $('#timeSlider').on('input', (e) => {
         year =  $(e.target).val();
         $('#timeLabel').text(String(year));
-        mapData.eachLayer(layer => layer.setStyle(style(layer.feature)));
+        mapData.eachLayer(setLeafletStyle);
         updateD3Symbology();
         createCountryReport(selectedCountry, parseInt(year));
     });
@@ -76,7 +89,7 @@ function initListeners() {
             document.getElementById('timeSlider').min = '2000';
         }
         // update symbology
-        mapData.eachLayer(layer => layer.setStyle(style(layer.feature)));
+        mapData.eachLayer(setLeafletStyle);
         createCountryReport(selectedCountry, parseInt(year));
         updateD3Symbology();
     });
@@ -99,6 +112,7 @@ function initListeners() {
             closeTray();
             // Hide the D3 map and swap .map class with Leaflet map
             $('#d3Map').hide();
+            resetD3Selection(true);
             $("#d3MapContainer")
                 .hide()
                 .removeClass("map");
@@ -114,7 +128,6 @@ function initListeners() {
 
         }
     });
-
 };
 
 function expandTray() {
@@ -180,11 +193,14 @@ async function fetchJSON(url) {
 }
 
 function style(feature) {
+    const property = feature.properties[`${indicator}${year}${checked}`]
     let color;
     if (checked === 'c') { // if checked (i.e. show 10 year change)
-        color = colorScales.diverging(feature.properties[`${indicator}${year}${checked}`])
+        color = colorScales.diverging(property)
+    } else if (indicator.includes('rg')) {
+        color = colorScales.ordinal(property)
     } else {
-        color = getColor(feature.properties[`${indicator}${year}${checked}`], colorScales.purples);
+        color = getColor(property, colorScales.purples);
     }
     return {
         fillColor: color,
@@ -196,14 +212,12 @@ function style(feature) {
 }
 
 function getColor(d, colorScale) {
-    return d > .9 ? colorScale[7] :
-           d > .8 ? colorScale[6] :
-           d > .7 ? colorScale[5] :
-           d > .6 ? colorScale[4] :
-           d > .5 ? colorScale[3] :
+    return d > .8 ? colorScale[4] :
+           d > .6 ? colorScale[3] :
            d > .4 ? colorScale[2] :
-           d > .3 ? colorScale[1] :
-                    colorScale[0];
+           d > .2 ? colorScale[1] :
+           d > 0  ? colorScale[0] :
+           'grey';
 }
 
 
@@ -228,12 +242,13 @@ function createCountryReport(country, year) {
         li: "Liberal",
         pa: "Participatory",
         de: "Deliberative",
-        eg: "Egalitarian"
+        eg: "Egalitarian",
+        rg: "Regime Type"
     }
 
     // BAR CHART
     // Generate array of fields for the selected year
-    let attributeYearKeys = ["el", "li", "pa", "de", "eg"].map(attr => `${attr}${year}`)
+    let attributeYearKeys = ["el", "li", "pa", "de", "eg", "rg"].map(attr => `${attr}${year}`)
 
     // Filter the attribute data to only the fields for the selected year
     let attributeYearData = Object.keys(selectedCountryAttributes)
@@ -267,11 +282,21 @@ function createCountryReport(country, year) {
         [indicatorTranslationObject[indicator], ...timeSeriesValues]
     ]    
 
+    // determine regime type labeling
+    const rgVal = attributeYearData[`rg${year}`];
+    let regimeLabel = rgVal === 3 ? 'Liberal Democracy' :
+                      rgVal === 2 ? 'Electoral Democracy' :
+                      rgVal === 1 ? 'Electoral Autocracy' :
+                                    'Closed Autocracy'    
+
     //#################//
     // GENERATE REPORT //
     //#################//
     // Selected country title
-    $(".report-country-name").text(selectedCountry);
+    $(".report-country-name").text(`${selectedCountry}`);
+    $('#regimeLabel')
+        .text(`${regimeLabel}`)
+        .css('background-color', colorScales.ordinal(rgVal));
 
     // Selected year indicators scores list 
     $("#report-attributes-list").empty();
@@ -279,8 +304,11 @@ function createCountryReport(country, year) {
     // Selected indicator time series chart
     $("#time-series-title-indicator").text(`${indicatorTranslationObject[indicator]} Score`)
     $.each(attributeYearData, (key, value) => {
-        $("#report-attributes-list").append(`<li><b>${indicatorTranslationObject[key.substring(0,2)]}: </b>${value}</li>`)
+        if (!key.includes('rg')) { // skip regime type
+            $("#report-attributes-list").append(`<li><b>${indicatorTranslationObject[key.substring(0,2)]}: </b>${value}</li>`)
+        } 
     });
+
     createTimeSeriesChart(indicatorTimeSeriesColumns);
 
     // Selected year indicators bar chart
@@ -313,11 +341,11 @@ function createBarChart(data) {
             ],
             type: "bar",
             colors: {
-                Electoral: colorScales.reds[5],
-                Liberal: colorScales.oranges[5],
-                Participatory: colorScales.blues[5],
-                Deliberative: colorScales.greens[5],
-                Egalitarian: colorScales.purples[5],
+                Electoral: colorScales.qualitative[0],
+                Liberal: colorScales.qualitative[2],
+                Participatory: colorScales.qualitative[1],
+                Deliberative: colorScales.qualitative[3],
+                Egalitarian: colorScales.qualitative[4],
             }
         },
         bar: {
@@ -337,7 +365,7 @@ function createBarChart(data) {
                 min: 0,
                 max: 1,
                 padding: {
-                    top: 0,
+                    top: 5,
                     bottom: 0
                 },
                 label: {
@@ -345,6 +373,11 @@ function createBarChart(data) {
                     position: "outer-top"
                 }
             },
+        },
+        tooltip: {
+            format: {
+                title: () => ''
+            }
         },
         legend: {
             item: {
@@ -362,6 +395,19 @@ function resizeChart(chart, el, titleEl) {
 }
 
 function createTimeSeriesChart(data) {
+    let ymin, ymax, ytick;
+    if (indicator.includes('rg')) {
+        ymin = 0;
+        ymax = 3;
+        ytick = {
+            values: [0, 1, 2, 3],
+            count: 4
+        }
+    } else {
+        ymin = 0;
+        ymax = 1;
+        ytick = {}
+    }
     timeSeriesChart = c3.generate({
         bindto: "#report-indicator-time-series-chart",
         size: {
@@ -389,17 +435,23 @@ function createTimeSeriesChart(data) {
             tick: {
                 format: "%Y"
             },
-            y: {
-                min: 0,
-                max: 1,
+            x: {
                 padding: {
-                    top: 0,
-                    bottom: 0
+                    right: 1
+                }
+            },
+            y: {
+                min: ymin,
+                max: ymax,
+                padding: {
+                    top: 1,
+                    bottom: 1
                 },
                 label: {
                     text: "Score",
                     position: "outer-top"
-                }
+                },
+                tick: ytick
             }
         },
         legend: {
@@ -411,7 +463,6 @@ function createTimeSeriesChart(data) {
 }
 
 function highlightFeature(e) {
-    
     resetMapHighlight();
     selectedFeature = e.target;
     selectedFeature.setStyle({
@@ -427,22 +478,52 @@ function highlightFeature(e) {
 function resetMapHighlight() {
     if (selectedFeature) {
         mapData.resetStyle(selectedFeature);
+        selectedFeature = null;
+        selectedCountry = null;
     }
 }
 
 function onEachFeature(feature, layer) {
-    layer.on({
-        click: (e) => {
-            highlightFeature(e);
-            selectedCountry = feature.properties.country_name;            
-            createCountryReport(selectedCountry, year)
-            expandTray();
-            map.invalidateSize();
-            map.fitBounds(e.target.getBounds())
-        }
-    })
+    if (!exclude.includes(feature.properties.country_name)) {
+        layer.on({
+            click: (e) => {
+                // if it's a double-click, deselect
+                console.log('selectedCountry', selectedCountry);
+                if (selectedCountry === feature.properties.country_name) {
+                    resetMapHighlight();
+                    closeTray();
+                    setTimeout(() => {
+                        map.invalidateSize();
+                    }, 100);
+                    console.log('bye bye');
+                    return;
+                }
+
+                highlightFeature(e);
+                selectedCountry = feature.properties.country_name;
+                createCountryReport(selectedCountry, year)
+                expandTray();
+                map.invalidateSize();
+                map.fitBounds(e.target.getBounds())
+            }
+        })
+    }
 }
 
+function setLeafletStyle(layer) {
+    layer.setStyle(style(layer.feature));
+
+    if (selectedFeature) {
+        selectedFeature.setStyle({
+            weight: 2,
+            color: "#00FFFF"
+        });
+
+        if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+            selectedFeature.bringToFront();
+        }
+    };
+}
 
 // -----------------------------------------------------------------------------
 // ------------------------------- d3 stuff ------------------------------------
@@ -537,8 +618,7 @@ async function initd3Map() {
 
 
     const g2 = svg.append('g');
-    // don't show western sahara or greenland population, no dem data for them
-    let exclude = ['W. Sahara','Greenland']
+    // don't show western sahara, belize,  or greenland population, no dem data for them
     geo.features = geo.features.filter(e => !exclude.includes(e.properties.country_name))
 
     g2.append('g')
@@ -550,10 +630,10 @@ async function initd3Map() {
             .attr("cx", d => d.x)
             .attr("cy", d => d.y)
             .attr("fill", d => getColor(d.properties[`${indicator}${year}${checked}`], colorScales.purples))
-            .attr("fill-opacity", 0.7)
+            .attr("fill-opacity", 0.85)
             // .attr("stroke", "steelblue")
             .attr('stroke', 'grey')
-            .attr('stroke-width', .25)
+            .attr('stroke-width', 1)
             .attr('cursor', 'pointer')
             .on('click', clicked);
 
@@ -600,10 +680,13 @@ function updateD3Symbology() {
     d3.selectAll("circle")
         .attr("fill", d => {
             if (d.properties) {
+                const property = d.properties[`${indicator}${year}${checked}`]
                 if (checked === 'c') { // if checked (i.e. show 10 year change)
-                    color = colorScales.diverging(d.properties[`${indicator}${year}${checked}`])
+                    color = colorScales.diverging(property)
+                }  else if (indicator.includes('rg')) {
+                    color = colorScales.ordinal(property)
                 } else {
-                    color = getColor(d.properties[`${indicator}${year}${checked}`], colorScales.purples);
+                    color = getColor(property, colorScales.purples);
                 }
             }
             return color
@@ -613,6 +696,6 @@ function updateD3Symbology() {
 function resetD3Selection(clear=false) {
     d3.select(previousD3Select)
         .style('stroke','grey')
-        .attr('stroke-width', .25);
+        .attr('stroke-width', 1);
     if (clear) previousD3Select = null;
 }
