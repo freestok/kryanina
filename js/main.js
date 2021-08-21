@@ -369,13 +369,18 @@ function resizeChart(chart, el, titleEl) {
 }
 
 function createTimeSeriesChart(data) {
-    let ymin, ymax;
+    let ymin, ymax, ytick;
     if (indicator.includes('rg')) {
         ymin = 0;
         ymax = 3;
+        ytick = {
+            values: [0, 1, 2, 3],
+            count: 4
+        }
     } else {
         ymin = 0;
         ymax = 1;
+        ytick = {}
     }
     timeSeriesChart = c3.generate({
         bindto: "#report-indicator-time-series-chart",
@@ -404,17 +409,23 @@ function createTimeSeriesChart(data) {
             tick: {
                 format: "%Y"
             },
+            x: {
+                padding: {
+                    right: 1
+                }
+            },
             y: {
                 min: ymin,
                 max: ymax,
                 padding: {
-                    top: 0,
+                    top: 1,
                     bottom: 0
                 },
                 label: {
                     text: "Score",
                     position: "outer-top"
-                }
+                },
+                tick: ytick
             }
         },
         legend: {
