@@ -117,3 +117,9 @@ html, body {
     background-color: #f9efe6;
     font-size: 1.25rem;
 }
+
+#regimeLabel {
+    color: white;
+    padding: .25em;
+    margin-left: .5em;
+}

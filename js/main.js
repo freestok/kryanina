@@ -281,11 +281,21 @@ function createCountryReport(country, year) {
         [indicatorTranslationObject[indicator], ...timeSeriesValues]
     ]    
 
+    // determine regime type labeling
+    const rgVal = attributeYearData[`rg${year}`];
+    let regimeLabel = rgVal === 3 ? 'Liberal Democracy' :
+                      rgVal === 2 ? 'Electoral Democracy' :
+                      rgVal === 1 ? 'Electoral Autocracy' :
+                                    'Closed Autocracy'    
+
     //#################//
     // GENERATE REPORT //
     //#################//
     // Selected country title
-    $(".report-country-name").text(selectedCountry);
+    $(".report-country-name").text(`${selectedCountry}`);
+    $('#regimeLabel')
+        .text(`${regimeLabel}`)
+        .css('background-color', colorScales.ordinal(rgVal));
 
     // Selected year indicators scores list 
     $("#report-attributes-list").empty();
@@ -429,7 +439,7 @@ function createTimeSeriesChart(data) {
                 max: ymax,
                 padding: {
                     top: 1,
-                    bottom: 0
+                    bottom: 1
                 },
                 label: {
                     text: "Score",
