@@ -1,5 +1,6 @@
 // -----------------------------------
 // --------- GLOBAL VARIABLES --------
+console.log('chroma.brewer.Set1', chroma.brewer.Set1);
 let year = '2020',
     selectedCountry = null,
     indicator,
@@ -15,7 +16,8 @@ let year = '2020',
         greens: chroma.scale('greens').colors(8),
         purples: chroma.scale('purples').colors(5),
         diverging: chroma.scale('RdBu').domain([-1, 1]),
-        ordinal: chroma.scale('RdBu').domain([0, 1, 2, 3])
+        ordinal: chroma.scale('RdBu').domain([0, 1, 2, 3]),
+        qualitative: ['#0072B2', '#009E73', '#D55E00', '#56B4E9', '#CC79A7']
     },
     barChart,
     timeSeriesChart,
@@ -127,7 +129,6 @@ function initListeners() {
 
         }
     });
-
 };
 
 function expandTray() {
@@ -341,11 +342,11 @@ function createBarChart(data) {
             ],
             type: "bar",
             colors: {
-                Electoral: colorScales.reds[5],
-                Liberal: colorScales.oranges[5],
-                Participatory: colorScales.blues[5],
-                Deliberative: colorScales.greens[5],
-                Egalitarian: colorScales.purples[5],
+                Electoral: colorScales.qualitative[0],
+                Liberal: colorScales.qualitative[2],
+                Participatory: colorScales.qualitative[1],
+                Deliberative: colorScales.qualitative[3],
+                Egalitarian: colorScales.qualitative[4],
             }
         },
         bar: {
