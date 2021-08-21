@@ -128,3 +128,43 @@ html, body {
     background-color: #1b1919 !important;
     letter-spacing: .2em;
 }
+
+#metadataBody {
+    font-family: "Optima", sans-serif;
+}
+
+#aut {
+    background-color:#ca0020;
+    padding: .25em;
+    color: white;
+}
+
+#elAut {
+    background-color:#f4a582;
+    padding: .25em;
+    color: white;
+}
+
+#elDem {
+    background-color:#92c5de;
+    padding: .25em;
+    color: white;
+}
+
+#dem {
+    background-color:#0571b0;
+    padding: .25em;
+    color: white;
+}
+
+#regimeList li {
+    margin: .3em 0;
+}
+
+.legendImg {
+    width: 50%;
+    height: auto;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}

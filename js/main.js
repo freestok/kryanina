@@ -1,6 +1,5 @@
 // -----------------------------------
 // --------- GLOBAL VARIABLES --------
-console.log('chroma.brewer.Set1', chroma.brewer.Set1);
 let year = '2020',
     selectedCountry = null,
     indicator,
