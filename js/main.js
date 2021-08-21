@@ -7,6 +7,7 @@ let year = '2020',
     map,
     mapJSON,
     mapData,
+    selectedFeature,
     colorScales = {
         reds: chroma.scale('reds').colors(8),
         oranges: chroma.scale('oranges').colors(8),
@@ -83,6 +84,8 @@ function initListeners() {
     $('#asCartogram').on('change', e => {
         currentExtent = map.getBounds();
         if (e.target.checked) {
+            resetMapHighlight();
+            closeTray();
             // Hide the Leaflet map and swap .map class with D3 map
             $('#map').hide();
             $("#mapContainer")
@@ -93,6 +96,7 @@ function initListeners() {
                 .show()
                 .addClass("map")
         } else {
+            closeTray();
             // Hide the D3 map and swap .map class with Leaflet map
             $('#d3Map').hide();
             $("#d3MapContainer")
@@ -406,9 +410,30 @@ function createTimeSeriesChart(data) {
     })
 }
 
+function highlightFeature(e) {
+    
+    resetMapHighlight();
+    selectedFeature = e.target;
+    selectedFeature.setStyle({
+        weight: 2,
+        color: "#00FFFF"
+    });
+
+    if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+        selectedFeature.bringToFront();
+    }
+}
+
+function resetMapHighlight() {
+    if (selectedFeature) {
+        mapData.resetStyle(selectedFeature);
+    }
+}
+
 function onEachFeature(feature, layer) {
     layer.on({
         click: (e) => {
+            highlightFeature(e);
             selectedCountry = feature.properties.country_name;            
             createCountryReport(selectedCountry, year)
             expandTray();
