@@ -45,6 +45,15 @@ function initListeners() {
     // listener on radio buttons
     $("input:radio[name=flexRadioDefault]").on("change", (e) => {
         indicator = e.target.id.replace('Radio','');
+        
+        if (indicator === 'rg') {
+            $('#tenYrToggle').prop('disabled', true);
+            $('#tenYrToggle').prop('checked', false);
+            checked = '';
+        } else {
+            $('#tenYrToggle').prop('disabled', false);
+        }
+
         mapData.eachLayer(setLeafletStyle);
         updateD3Symbology();
         createCountryReport(selectedCountry, parseInt(year));
@@ -605,7 +614,7 @@ async function initd3Map() {
             .attr("fill-opacity", 0.85)
             // .attr("stroke", "steelblue")
             .attr('stroke', 'grey')
-            .attr('stroke-width', .25)
+            .attr('stroke-width', 1)
             .attr('cursor', 'pointer')
             .on('click', clicked);
 
@@ -668,6 +677,6 @@ function updateD3Symbology() {
 function resetD3Selection(clear=false) {
     d3.select(previousD3Select)
         .style('stroke','grey')
-        .attr('stroke-width', .25);
+        .attr('stroke-width', 1);
     if (clear) previousD3Select = null;
 }
