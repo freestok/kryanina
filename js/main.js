@@ -45,7 +45,7 @@ function initListeners() {
     // listener on radio buttons
     $("input:radio[name=flexRadioDefault]").on("change", (e) => {
         indicator = e.target.id.replace('Radio','');
-        mapData.eachLayer(layer => layer.setStyle(style(layer.feature)));
+        mapData.eachLayer(setLeafletStyle);
         updateD3Symbology();
         createCountryReport(selectedCountry, parseInt(year));
     });
@@ -53,7 +53,7 @@ function initListeners() {
     $('#timeSlider').on('input', (e) => {
         year =  $(e.target).val();
         $('#timeLabel').text(String(year));
-        mapData.eachLayer(layer => layer.setStyle(style(layer.feature)));
+        mapData.eachLayer(setLeafletStyle);
         updateD3Symbology();
         createCountryReport(selectedCountry, parseInt(year));
     });
@@ -78,7 +78,7 @@ function initListeners() {
             document.getElementById('timeSlider').min = '2000';
         }
         // update symbology
-        mapData.eachLayer(layer => layer.setStyle(style(layer.feature)));
+        mapData.eachLayer(setLeafletStyle);
         createCountryReport(selectedCountry, parseInt(year));
         updateD3Symbology();
     });
@@ -101,6 +101,7 @@ function initListeners() {
             closeTray();
             // Hide the D3 map and swap .map class with Leaflet map
             $('#d3Map').hide();
+            resetD3Selection(true);
             $("#d3MapContainer")
                 .hide()
                 .removeClass("map");
@@ -437,7 +438,6 @@ function createTimeSeriesChart(data) {
 }
 
 function highlightFeature(e) {
-    
     resetMapHighlight();
     selectedFeature = e.target;
     selectedFeature.setStyle({
@@ -453,6 +453,7 @@ function highlightFeature(e) {
 function resetMapHighlight() {
     if (selectedFeature) {
         mapData.resetStyle(selectedFeature);
+        selectedFeature = null;
     }
 }
 
@@ -460,8 +461,18 @@ function onEachFeature(feature, layer) {
     if (!exclude.includes(feature.properties.country_name)) {
         layer.on({
             click: (e) => {
+                // if it's a double-click, deselect
+                if (selectedCountry === feature.properties.country_name) {
+                    resetMapHighlight();
+                    closeTray();
+                    setTimeout(() => {
+                        map.invalidateSize();
+                    }, 100);
+                    return;
+                }
+
                 highlightFeature(e);
-                selectedCountry = feature.properties.country_name;            
+                selectedCountry = feature.properties.country_name;
                 createCountryReport(selectedCountry, year)
                 expandTray();
                 map.invalidateSize();
@@ -471,6 +482,20 @@ function onEachFeature(feature, layer) {
     }
 }
 
+function setLeafletStyle(layer) {
+    layer.setStyle(style(layer.feature));
+
+    if (selectedFeature) {
+        selectedFeature.setStyle({
+            weight: 2,
+            color: "#00FFFF"
+        });
+
+        if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+            selectedFeature.bringToFront();
+        }
+    };
+}
 
 // -----------------------------------------------------------------------------
 // ------------------------------- d3 stuff ------------------------------------
