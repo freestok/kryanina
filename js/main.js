@@ -20,7 +20,8 @@ let year = '2020',
     barChart,
     timeSeriesChart,
     currentExtent,
-    previousD3Select;
+    previousD3Select,
+    exclude = ['Greenland', 'W. Sahara', 'Belize'];
 // -----------------------------------
 // -----------------------------------
 
@@ -445,16 +446,18 @@ function resetMapHighlight() {
 }
 
 function onEachFeature(feature, layer) {
-    layer.on({
-        click: (e) => {
-            highlightFeature(e);
-            selectedCountry = feature.properties.country_name;            
-            createCountryReport(selectedCountry, year)
-            expandTray();
-            map.invalidateSize();
-            map.fitBounds(e.target.getBounds())
-        }
-    })
+    if (!exclude.includes(feature.properties.country_name)) {
+        layer.on({
+            click: (e) => {
+                highlightFeature(e);
+                selectedCountry = feature.properties.country_name;            
+                createCountryReport(selectedCountry, year)
+                expandTray();
+                map.invalidateSize();
+                map.fitBounds(e.target.getBounds())
+            }
+        })
+    }
 }
 
 
@@ -551,8 +554,7 @@ async function initd3Map() {
 
 
     const g2 = svg.append('g');
-    // don't show western sahara or greenland population, no dem data for them
-    let exclude = ['W. Sahara','Greenland']
+    // don't show western sahara, belize,  or greenland population, no dem data for them
     geo.features = geo.features.filter(e => !exclude.includes(e.properties.country_name))
 
     g2.append('g')
