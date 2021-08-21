@@ -375,6 +375,11 @@ function createBarChart(data) {
                 }
             },
         },
+        tooltip: {
+            format: {
+                title: () => ''
+            }
+        },
         legend: {
             item: {
                 onclick: () => undefined,

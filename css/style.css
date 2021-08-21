@@ -123,3 +123,8 @@ html, body {
     padding: .25em;
     margin-left: .5em;
 }
+
+.c3-tooltip th {
+    background-color: #1b1919 !important;
+    letter-spacing: .2em;
+}
